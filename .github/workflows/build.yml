@@ -47,6 +47,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: dmp-reqcheck-linux-x64.zip
+          name: dmp-reqcheck-linux-x64
           path: bin/dmp-reqcheck
           if-no-files-found: error
