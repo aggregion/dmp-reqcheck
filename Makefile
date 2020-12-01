@@ -23,6 +23,8 @@ $(go_bin)/golint:
 	@cd /tmp && go get -v -u golang.org/x/lint/golint
 
 lint: $(gobin)/golint
+	@echo "Running govet"
+	@$(foreach dir,$(lintfolders),go vet ./$(dir)/...;)
 	@echo "Running golint"
 	@$(foreach dir,$(lintfolders),golint -set_exit_status $(dir)/...;)
 	@echo "Done"
