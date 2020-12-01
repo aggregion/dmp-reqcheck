@@ -9,8 +9,8 @@ on:
     types: [published]
 
 jobs:
-  init:
-    name: Init
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,11 +34,6 @@ jobs:
         run: |
           go mod download
 
-  test:
-    name: Test
-    needs: init
-    runs-on: ubuntu-latest
-    steps:
       - name: Check lint
         run: |
           make lint
@@ -46,17 +41,12 @@ jobs:
         run: |
           make test
 
-  build:
-    name: Build
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
       - name: Build binary
         run: |
           make build
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: dmp-reqcheck-linux-x64
+          name: dmp-reqcheck-linux-x64.zip
           path: bin/dmp-reqcheck
           if-no-files-found: error

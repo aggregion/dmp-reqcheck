@@ -18,7 +18,7 @@ $(target): $(gosrc)
 	@cd cmd && go build -o ../$(target) -tags netgo -trimpath -ldflags \
 		"-X github.com/aggregion/dmp-reqcheck/internal.GitCommit=$(git_commit) -X github.com/aggregion/dmp-reqcheck/internal.GitBranch=$(git_branch) -X github.com/aggregion/dmp-reqcheck/internal.AppVersion=$(app_version) $(linkopts)"
 
-$(go_bin)/golint:
+$(gobin)/golint:
 	@echo "Installing golint"
 	@cd /tmp && go get -v -u golang.org/x/lint/golint
 
