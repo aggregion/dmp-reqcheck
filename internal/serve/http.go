@@ -40,21 +40,15 @@ func (dr *HTTPStubServer) serveHTTP(ctx context.Context, host string) error {
 		err = server.ListenAndServe()
 		if err != nil {
 			fmt.Printf("busy %s\n skip it\n", server.Addr)
-			close(dr.waitListenAndServe)
 		}
 	}()
 
 	go func() {
-		if dr.waitListenAndServe == nil {
-			return
-		}
 		select {
 		case <-dr.waitListenAndServe:
 		case <-ctx.Done():
 			close(dr.waitListenAndServe)
 		}
-
-		dr.waitListenAndServe = nil
 
 		server.Close()
 	}()

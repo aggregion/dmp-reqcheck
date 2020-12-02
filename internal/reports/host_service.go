@@ -23,7 +23,7 @@ const (
 )
 
 type (
-	// HostAccesseReport .
+	// HostServiceReport .
 	HostServiceReport struct {
 		Target    string
 		Timeout   time.Duration
