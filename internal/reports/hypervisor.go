@@ -11,10 +11,24 @@ type (
 	// HypervisorReport .
 	HypervisorReport struct {
 		name string `attr:"name"`
+
+		errors []error
 	}
 )
 
-func (dr *HypervisorReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*HypervisorReport)(nil))
+
+// Start .
+func (dr *HypervisorReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *HypervisorReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *HypervisorReport) gatherLinux(ctx context.Context) []error {
 	sysInfo := getSysInfo()
 
 	dr.name = sysInfo.Node.Hypervisor
@@ -23,7 +37,7 @@ func (dr *HypervisorReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *HypervisorReport) Gather(ctx context.Context) error {
+func (dr *HypervisorReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

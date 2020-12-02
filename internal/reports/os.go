@@ -29,10 +29,24 @@ type (
 		version      string `attr:"version"`
 		versionMajor int64  `attr:"version_major"`
 		versionMinor int64  `attr:"version_minor"`
+
+		errors []error
 	}
 )
 
-func (dr *OSReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*OSReport)(nil))
+
+// Start .
+func (dr *OSReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *OSReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *OSReport) gatherLinux(ctx context.Context) []error {
 	sysInfo := getSysInfo()
 
 	dr.osType = "linux"
@@ -51,7 +65,7 @@ func (dr *OSReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *OSReport) Gather(ctx context.Context) error {
+func (dr *OSReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

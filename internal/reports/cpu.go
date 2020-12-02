@@ -49,7 +49,19 @@ type (
 	}
 )
 
-func (dr *CPUReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*CPUReport)(nil))
+
+// Start .
+func (dr *CPUReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *CPUReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *CPUReport) gatherLinux(ctx context.Context) []error {
 	sysInfo := getSysInfo()
 
 	dr.Cores = int64(sysInfo.CPU.Cores)
@@ -88,7 +100,7 @@ func (dr *CPUReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *CPUReport) Gather(ctx context.Context) error {
+func (dr *CPUReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

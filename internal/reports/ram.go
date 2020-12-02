@@ -20,7 +20,19 @@ type (
 	}
 )
 
-func (dr *RAMReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*RAMReport)(nil))
+
+// Start .
+func (dr *RAMReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *RAMReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *RAMReport) gatherLinux(ctx context.Context) []error {
 	sysInfo := getSysInfo()
 
 	dr.total = int64(sysInfo.Memory.Size)
@@ -40,7 +52,7 @@ func (dr *RAMReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *RAMReport) Gather(ctx context.Context) error {
+func (dr *RAMReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

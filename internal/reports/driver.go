@@ -22,10 +22,24 @@ type (
 		version      string `attr:"version"`
 		versionMajor int64  `attr:"version_major"`
 		versionMinor int64  `attr:"version_minor"`
+
+		errors []error
 	}
 )
 
-func (dr *DriverReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*DriverReport)(nil))
+
+// Start .
+func (dr *DriverReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *DriverReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *DriverReport) gatherLinux(ctx context.Context) []error {
 	dr.version = ""
 	dr.versionMajor = 0
 	dr.versionMinor = 0
@@ -40,7 +54,7 @@ func (dr *DriverReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *DriverReport) Gather(ctx context.Context) error {
+func (dr *DriverReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

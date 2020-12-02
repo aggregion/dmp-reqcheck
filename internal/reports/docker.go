@@ -42,10 +42,24 @@ type (
 		composeVersion      string `attr:"compose_version"`
 		composeVersionMajor int64  `attr:"compose_version_major"`
 		composeVersionMinor int64  `attr:"compose_version_minor"`
+
+		errors []error
 	}
 )
 
-func (dr *DockerReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*DockerReport)(nil))
+
+// Start .
+func (dr *DockerReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *DockerReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *DockerReport) gatherLinux(ctx context.Context) []error {
 	dr.clientVersion = ""
 	dr.clientVersionMajor, dr.clientVersionMinor = 0, 0
 	dr.serverVersion = ""
@@ -91,7 +105,7 @@ func (dr *DockerReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *DockerReport) Gather(ctx context.Context) error {
+func (dr *DockerReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

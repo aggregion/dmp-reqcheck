@@ -22,10 +22,24 @@ type (
 		version      string `attr:"version"`
 		versionMajor int64  `attr:"version_major"`
 		versionMinor int64  `attr:"version_minor"`
+
+		errors []error
 	}
 )
 
-func (dr *KernelReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*KernelReport)(nil))
+
+// Start .
+func (dr *KernelReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *KernelReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *KernelReport) gatherLinux(ctx context.Context) []error {
 	sysInfo := getSysInfo()
 
 	dr.arch = sysInfo.Kernel.Architecture
@@ -41,7 +55,7 @@ func (dr *KernelReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *KernelReport) Gather(ctx context.Context) error {
+func (dr *KernelReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

@@ -14,10 +14,24 @@ type (
 	// OSSeLinuxReport .
 	OSSeLinuxReport struct {
 		mode string `attr:"mode"`
+
+		errors []error
 	}
 )
 
-func (dr *OSSeLinuxReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*OSSeLinuxReport)(nil))
+
+// Start .
+func (dr *OSSeLinuxReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *OSSeLinuxReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *OSSeLinuxReport) gatherLinux(ctx context.Context) []error {
 	dr.mode = ""
 
 	output, err := getOutputAndRegexpFind(ctx, `SELinux\s+status:\s+.+`, "sestatus")
@@ -32,7 +46,7 @@ func (dr *OSSeLinuxReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *OSSeLinuxReport) Gather(ctx context.Context) error {
+func (dr *OSSeLinuxReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

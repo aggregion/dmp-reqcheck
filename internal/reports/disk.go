@@ -20,7 +20,19 @@ type (
 	}
 )
 
-func (dr *DiskReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*DiskReport)(nil))
+
+// Start .
+func (dr *DiskReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *DiskReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *DiskReport) gatherLinux(ctx context.Context) []error {
 	dr.Total = 0
 	dr.Free = 0
 
@@ -40,7 +52,7 @@ func (dr *DiskReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *DiskReport) Gather(ctx context.Context) error {
+func (dr *DiskReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

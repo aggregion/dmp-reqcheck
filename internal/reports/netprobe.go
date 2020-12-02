@@ -22,10 +22,24 @@ type (
 
 		accessible int64 `attr:"accessible"`
 		probeTime  int64 `attr:"time"`
+
+		errors []error
 	}
 )
 
-func (dr *NetProbeReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*NetProbeReport)(nil))
+
+// Start .
+func (dr *NetProbeReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *NetProbeReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *NetProbeReport) gatherLinux(ctx context.Context) []error {
 	dr.accessible = 0
 
 	timeout := dr.Timeout
@@ -49,7 +63,7 @@ func (dr *NetProbeReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *NetProbeReport) Gather(ctx context.Context) error {
+func (dr *NetProbeReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 

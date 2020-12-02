@@ -24,20 +24,35 @@ const (
 type (
 	// HTTPReport .
 	HTTPReport struct {
-		URL     string
-		Method  string
-		Headers map[string][]string
-		Body    string
-		Timeout time.Duration
+		URL       string
+		Method    string
+		Headers   map[string][]string
+		Body      string
+		Timeout   time.Duration
+		WithProxy bool
 
 		status  int64                  `attr:"status"`
 		headers map[string]interface{} `attrMap:"header_"`
 		body    string                 `attr:"body"`
 		reqTime int64                  `attr:"req_time"`
+
+		errors []error
 	}
 )
 
-func (dr *HTTPReport) gatherLinux(ctx context.Context) error {
+var _ = (IReport)((*HTTPReport)(nil))
+
+// Start .
+func (dr *HTTPReport) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop .
+func (dr *HTTPReport) Stop(ctx context.Context) error {
+	return nil
+}
+
+func (dr *HTTPReport) gatherLinux(ctx context.Context) []error {
 	dr.status = 0
 	dr.headers = make(map[string]interface{})
 	dr.body = ""
@@ -54,11 +69,11 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) error {
 
 	start := time.Now().UnixNano()
 
-	response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers)
+	response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers, true)
 	if response != nil {
 		defer response.Body.Close()
 	}
-	if err == nil {
+	if err == nil && response != nil {
 		dr.status = int64(response.StatusCode)
 		for name, values := range response.Header {
 			dr.headers[name] = strings.Join(values, " ")
@@ -74,7 +89,7 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) error {
 }
 
 // Gather .
-func (dr *HTTPReport) Gather(ctx context.Context) error {
+func (dr *HTTPReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 
