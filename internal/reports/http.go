@@ -1,6 +1,14 @@
 package reports
 
-import "context"
+import (
+	"context"
+	"io"
+	"io/ioutil"
+	"strings"
+	"time"
+
+	"github.com/aggregion/dmp-reqcheck/pkg/network"
+)
 
 const (
 	// HTTPStatusIntAttr .
@@ -9,21 +17,58 @@ const (
 	HTTPHeaderStrAttrPrefix = "header_"
 	// HTTPBodyStrAttr .
 	HTTPBodyStrAttr = "body"
+	// HTTPRequestTimeIntAttr .
+	HTTPRequestTimeIntAttr = "req_time"
 )
 
 type (
 	// HTTPReport .
 	HTTPReport struct {
-		status  string                 `attr:"status"`
+		URL     string
+		Method  string
+		Headers map[string][]string
+		Body    string
+		Timeout time.Duration
+
+		status  int64                  `attr:"status"`
 		headers map[string]interface{} `attrMap:"header_"`
 		body    string                 `attr:"body"`
+		reqTime int64                  `attr:"req_time"`
 	}
 )
 
 func (dr *HTTPReport) gatherLinux(ctx context.Context) error {
-	dr.status = ""
+	dr.status = 0
 	dr.headers = make(map[string]interface{})
 	dr.body = ""
+
+	var body io.Reader
+	if dr.Method != "GET" {
+		body = strings.NewReader(dr.Body)
+	}
+
+	timeout := dr.Timeout
+	if timeout == 0 {
+		timeout = time.Second * 4
+	}
+
+	start := time.Now().UnixNano()
+
+	response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers)
+	if response != nil {
+		defer response.Body.Close()
+	}
+	if err == nil {
+		dr.status = int64(response.StatusCode)
+		for name, values := range response.Header {
+			dr.headers[name] = strings.Join(values, " ")
+		}
+
+		bodyBytes, _ := ioutil.ReadAll(response.Body)
+		dr.body = string(bodyBytes)
+	}
+
+	dr.reqTime = (time.Now().UnixNano() - start) / 1000000
 
 	return nil
 }
