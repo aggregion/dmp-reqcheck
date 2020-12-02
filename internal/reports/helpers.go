@@ -3,12 +3,110 @@ package reports
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
 	"regexp"
 	"strings"
+	"sync"
+
+	"github.com/zcalusic/sysinfo"
 )
 
+const versionRegExp = `([\d]+[^\d]+[\d]+[^\d]+[\d]+)`
+
+func parseVersionMinorMajor(version string) (major int64, minor int64) {
+	versionParts := regexp.MustCompile(`\d+`).FindAllString(version, -1)
+	if len(versionParts) > 0 {
+		fmt.Sscanf(versionParts[0], "%d", &major)
+	}
+	if len(versionParts) > 1 {
+		fmt.Sscanf(versionParts[1], "%d", &minor)
+	}
+	return
+}
+
+func getReportAttrFromField(v reflect.Value) interface{} {
+	kind := v.Type().Kind()
+
+	switch kind {
+	case reflect.String:
+		return v.String()
+	case reflect.Int:
+	case reflect.Int32:
+	case reflect.Int64:
+		return v.Int()
+	}
+
+	return nil
+}
+
+func getReportInterfaceAttr(obj interface{}, attrName string) interface{} {
+	v := reflect.ValueOf(obj).Elem()
+	t := reflect.TypeOf(obj).Elem()
+	for fieldIndex := 0; fieldIndex < t.NumField(); fieldIndex++ {
+		attrsPrefix := t.Field(fieldIndex).Tag.Get("attrMap")
+		if len(attrsPrefix) > 0 && strings.HasPrefix(attrName, attrsPrefix) {
+			mp := v.Field(fieldIndex)
+			key := reflect.ValueOf(strings.TrimPrefix(attrName, attrsPrefix))
+			mv := mp.MapIndex(key)
+			if !mv.IsValid() {
+				return nil
+			}
+
+			return getReportAttrFromField(mp.MapIndex(key).Elem())
+		}
+		attrs := t.Field(fieldIndex).Tag.Get("attr")
+		if attrs == attrName {
+			return getReportAttrFromField(v.Field((fieldIndex)))
+		}
+	}
+
+	return nil
+}
+
+func getReportStrAttr(obj interface{}, attrName string) string {
+	attrVal := getReportInterfaceAttr(obj, attrName)
+	if val, ok := attrVal.(string); ok {
+		return val
+	}
+
+	return ""
+}
+
+func getReportIntAttr(obj interface{}, attrName string) int64 {
+	attrVal := getReportInterfaceAttr(obj, attrName)
+	if val, ok := attrVal.(int64); ok {
+		return val
+	}
+
+	return 0
+}
+
+// GetReportAttrs .
+func GetReportAttrs(obj interface{}) (result map[string]interface{}) {
+	v := reflect.ValueOf(obj).Elem()
+	t := reflect.TypeOf(obj).Elem()
+	result = make(map[string]interface{})
+	for fieldIndex := 0; fieldIndex < t.NumField(); fieldIndex++ {
+		attrsPrefix := t.Field(fieldIndex).Tag.Get("attrMap")
+		if len(attrsPrefix) > 0 {
+			mp := v.Field(fieldIndex)
+			for _, key := range mp.MapKeys() {
+				result[attrsPrefix+key.String()] = getReportAttrFromField(mp.MapIndex(key).Elem())
+			}
+			continue
+		}
+
+		attr := t.Field(fieldIndex).Tag.Get("attr")
+		if len(attr) > 0 {
+			result[attr] = getReportAttrFromField(v.Field(fieldIndex))
+		}
+	}
+
+	return
+}
 func getOutput(ctx context.Context, cmd string, args ...string) (string, error) {
 	if cmd == "" {
 		return "", errors.New("empty command")
@@ -72,15 +170,23 @@ func getOutputAndRegexpFindAll(ctx context.Context, regExp string, cmd string, a
 	return regexp.MustCompile(regExp).FindAllString(output, 0), nil
 }
 
+var linuxFoundAppCache = sync.Map{}
+
 func findLinuxApps(ctx context.Context, paths []string, apps []string) (result map[string]string) {
 	result = make(map[string]string)
 	isNeedToFind := false
 	findArgs := []string{"", "-executable", "-type", "f"}
 
 	for inx, app := range apps {
+		if valRaw, ok := linuxFoundAppCache.Load(app); ok {
+			result[app] = valRaw.(string)
+			continue
+		}
+
 		output, err := getOutput(ctx, "which", app)
 		if err == nil {
 			result[app] = strings.TrimSpace(string(output))
+			linuxFoundAppCache.Store(app, result[app])
 			continue
 		}
 
@@ -103,6 +209,7 @@ func findLinuxApps(ctx context.Context, paths []string, apps []string) (result m
 					for _, app := range apps {
 						if strings.HasSuffix(line, string(os.PathSeparator)+app) {
 							result[app] = line
+							linuxFoundAppCache.Store(app, result[app])
 						}
 					}
 				}
@@ -111,4 +218,16 @@ func findLinuxApps(ctx context.Context, paths []string, apps []string) (result m
 	}
 
 	return
+}
+
+var sysinfoOnce = sync.Once{}
+var sysinfoValue *sysinfo.SysInfo
+
+func getSysInfo() *sysinfo.SysInfo {
+	sysinfoOnce.Do(func() {
+		sysinfoValue = new(sysinfo.SysInfo)
+		sysinfoValue.GetSysInfo()
+	})
+
+	return sysinfoValue
 }

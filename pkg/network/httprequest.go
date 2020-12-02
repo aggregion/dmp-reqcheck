@@ -34,6 +34,7 @@ func HTTPRequestAndGetResponse(requestContext context.Context, timeout time.Dura
 	httVerb, url string, body io.Reader, headers map[string][]string) (response *http.Response, err error) {
 
 	tr := &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
 		IdleConnTimeout:       timeout,
 		ResponseHeaderTimeout: timeout,
 		DisableKeepAlives:     true,
