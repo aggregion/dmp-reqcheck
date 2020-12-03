@@ -35,7 +35,7 @@ func EnclaveInspection(cfg *config.Settings, sc *schema.CheckSchema) {
 
 	strVal = reportStrAttr(allAttrs, "os", reports.OSVendorStrAttr)
 	if strVal != "ubuntu" && strVal != "centos" {
-		log.Warn("The OS is %s, the driver might be not install properly, should be use Ubuntu 18.x or CentOS 8.x", strVal)
+		log.Warnf("The OS is %s, the driver might be not install properly, should be use Ubuntu 18.x or CentOS 8.x", strVal)
 	}
 
 	strVal = reportStrAttr(allAttrs, "os", reports.OSVersionStrAttr)
