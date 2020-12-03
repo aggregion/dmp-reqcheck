@@ -17,8 +17,6 @@ type (
 	SwapFileReport struct {
 		total int64 `attr:"total"`
 		free  int64 `attr:"free"`
-
-		errors []error
 	}
 )
 

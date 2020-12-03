@@ -8,6 +8,7 @@ type (
 	// Settings .
 	Settings struct {
 		LoggingConsole *LoggingConsoleSettings
+		Host           *HostSettings
 	}
 )
 
@@ -16,5 +17,7 @@ func NewSettings(v *viper.Viper) *Settings {
 	return &Settings{
 		// Loggins
 		LoggingConsole: loggingConsoleSettingsValidateAndGet(v),
+		// Host
+		Host: hostSettingsValidateAndGet(v),
 	}
 }

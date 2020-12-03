@@ -15,8 +15,8 @@ const (
 type (
 	// DiskReport .
 	DiskReport struct {
-		Total int64 `attr:"total"`
-		Free  int64 `attr:"free"`
+		total int64 `attr:"total"`
+		free  int64 `attr:"free"`
 	}
 )
 
@@ -33,8 +33,8 @@ func (dr *DiskReport) Stop(ctx context.Context) error {
 }
 
 func (dr *DiskReport) gatherLinux(ctx context.Context) []error {
-	dr.Total = 0
-	dr.Free = 0
+	dr.total = 0
+	dr.free = 0
 
 	for _, mnt := range []string{"/", "/home", "/usr", "/var", "/opt", "/aggregion", "/mount", "/mnt"} {
 		line, err := getOutputAndRegexpFind(ctx, `([\d,]+.\s+[\d,]+.\s+[\d,]+.\s+[\d]+%)\s`+mnt+"$", "df", "-m", mnt)
@@ -43,8 +43,8 @@ func (dr *DiskReport) gatherLinux(ctx context.Context) []error {
 			var use int64
 			var free int64
 			fmt.Sscanf(line, "%d %d %d", &total, &use, &free)
-			dr.Total += total
-			dr.Free += free
+			dr.total += total
+			dr.free += free
 		}
 	}
 

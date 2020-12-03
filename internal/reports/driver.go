@@ -17,13 +17,11 @@ const (
 type (
 	// DriverReport .
 	DriverReport struct {
-		driverName string
+		DriverName string
 
 		version      string `attr:"version"`
 		versionMajor int64  `attr:"version_major"`
 		versionMinor int64  `attr:"version_minor"`
-
-		errors []error
 	}
 )
 
@@ -44,7 +42,7 @@ func (dr *DriverReport) gatherLinux(ctx context.Context) []error {
 	dr.versionMajor = 0
 	dr.versionMinor = 0
 
-	version, err := getOutputAndRegexpFind(ctx, `vers[^:]+:\s+.+`, "modinfo", dr.driverName)
+	version, err := getOutputAndRegexpFind(ctx, `version.+`, "modinfo", dr.DriverName)
 	if err == nil {
 		dr.version = regexp.MustCompile(versionRegExp).FindString(version)
 		dr.versionMajor, dr.versionMinor = parseVersionMinorMajor(dr.version)

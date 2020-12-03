@@ -2,11 +2,13 @@ package reports
 
 import (
 	"context"
+	"errors"
 	"io"
 	"io/ioutil"
 	"strings"
 	"time"
 
+	"github.com/aggregion/dmp-reqcheck/pkg/common"
 	"github.com/aggregion/dmp-reqcheck/pkg/network"
 )
 
@@ -35,8 +37,6 @@ type (
 		headers map[string]interface{} `attrMap:"header_"`
 		body    string                 `attr:"body"`
 		reqTime int64                  `attr:"req_time"`
-
-		errors []error
 	}
 )
 
@@ -57,6 +57,10 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) []error {
 	dr.headers = make(map[string]interface{})
 	dr.body = ""
 
+	if dr.Method == "" {
+		dr.Method = "GET"
+	}
+
 	var body io.Reader
 	if dr.Method != "GET" {
 		body = strings.NewReader(dr.Body)
@@ -64,26 +68,35 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) []error {
 
 	timeout := dr.Timeout
 	if timeout == 0 {
-		timeout = time.Second * 4
+		timeout = time.Second * 2
 	}
 
-	start := time.Now().UnixNano()
+	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {
+		start := time.Now().UnixNano()
 
-	response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers, true)
-	if response != nil {
-		defer response.Body.Close()
-	}
-	if err == nil && response != nil {
-		dr.status = int64(response.StatusCode)
-		for name, values := range response.Header {
-			dr.headers[name] = strings.Join(values, " ")
+		response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers, true)
+		if response != nil {
+			defer response.Body.Close()
+		}
+		if err == nil {
+			if response == nil {
+				return errors.New("response is nil")
+			}
+			dr.status = int64(response.StatusCode)
+			for name, values := range response.Header {
+				dr.headers[name] = strings.Join(values, " ")
+			}
+
+			bodyBytes, _ := ioutil.ReadAll(response.Body)
+			dr.body = string(bodyBytes)
+		} else {
+			return err
 		}
 
-		bodyBytes, _ := ioutil.ReadAll(response.Body)
-		dr.body = string(bodyBytes)
-	}
+		dr.reqTime = (time.Now().UnixNano() - start) / 1000000
 
-	dr.reqTime = (time.Now().UnixNano() - start) / 1000000
+		return nil
+	})
 
 	return nil
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/zcalusic/sysinfo"
 )
 
-const versionRegExp = `([\d]+[^\d]+[\d]+[^\d]+[\d]+)`
+const versionRegExp = `([\d]+[^\d]+[\d]+)`
 
 func parseVersionMinorMajor(version string) (major int64, minor int64) {
 	versionParts := regexp.MustCompile(`\d+`).FindAllString(version, -1)
@@ -107,6 +107,7 @@ func GetReportAttrs(obj interface{}) (result map[string]interface{}) {
 
 	return
 }
+
 func getOutput(ctx context.Context, cmd string, args ...string) (string, error) {
 	if cmd == "" {
 		return "", errors.New("empty command")

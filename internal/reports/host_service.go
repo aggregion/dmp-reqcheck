@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/aggregion/dmp-reqcheck/internal/serve"
+	"github.com/aggregion/dmp-reqcheck/pkg/common"
 	"github.com/aggregion/dmp-reqcheck/pkg/network"
 	"github.com/aggregion/dmp-reqcheck/pkg/utils"
 )
@@ -25,15 +26,14 @@ const (
 type (
 	// HostServiceReport .
 	HostServiceReport struct {
-		Target    string
-		Timeout   time.Duration
-		WithProxy bool
+		Target     string
+		Timeout    time.Duration
+		WithProxy  bool
+		IsThisHost bool
 
 		accessible int64 `attr:"accessible"`
 
 		httpServer serve.HTTPStubServer
-
-		errors []error
 	}
 )
 
@@ -78,11 +78,19 @@ func (dr *HostServiceReport) stopLinux(ctx context.Context) error {
 
 // Start .
 func (dr *HostServiceReport) Start(ctx context.Context) error {
+	if !dr.IsThisHost {
+		return nil
+	}
+
 	return dr.startLinux(ctx)
 }
 
 // Stop .
 func (dr *HostServiceReport) Stop(ctx context.Context) error {
+	if !dr.IsThisHost {
+		return nil
+	}
+
 	return dr.stopLinux(ctx)
 }
 
@@ -97,7 +105,7 @@ func (dr *HostServiceReport) gatherLinux(ctx context.Context) []error {
 
 	timeout := dr.Timeout
 	if timeout == 0 {
-		timeout = time.Second * 4
+		timeout = time.Second * 2
 	}
 
 	requestMethod := url.Query().Get("method")
@@ -136,23 +144,32 @@ func (dr *HostServiceReport) gatherLinux(ctx context.Context) []error {
 	query.Del("response_status")
 	url.RawQuery = query.Encode()
 
-	response, err := network.HTTPRequestAndGetResponse(ctx,
-		timeout,
-		requestMethod,
-		url.String(), sendBodyStream, nil, false)
-	if response != nil {
-		defer response.Body.Close()
-	}
-
-	if err == nil && response != nil {
-		bodyBytes, _ := ioutil.ReadAll(response.Body)
-		body := string(bodyBytes)
-
-		if regexp.MustCompile(matchStatusStr).MatchString(fmt.Sprintf("%d", response.StatusCode)) &&
-			regexp.MustCompile(matchBodyStr).MatchString(body) {
-			dr.accessible = 1
+	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {
+		response, err := network.HTTPRequestAndGetResponse(ctx,
+			timeout,
+			requestMethod,
+			url.String(), sendBodyStream, nil, false)
+		if response != nil {
+			defer response.Body.Close()
 		}
-	}
+
+		if err == nil {
+			if response == nil {
+				return errors.New("response is nil")
+			}
+			bodyBytes, _ := ioutil.ReadAll(response.Body)
+			body := string(bodyBytes)
+
+			if regexp.MustCompile(matchStatusStr).MatchString(fmt.Sprintf("%d", response.StatusCode)) &&
+				regexp.MustCompile(matchBodyStr).MatchString(body) {
+				dr.accessible = 1
+			}
+		} else {
+			return err
+		}
+
+		return nil
+	})
 
 	return nil
 }

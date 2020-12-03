@@ -22,8 +22,6 @@ type (
 		version      string `attr:"version"`
 		versionMajor int64  `attr:"version_major"`
 		versionMinor int64  `attr:"version_minor"`
-
-		errors []error
 	}
 )
 

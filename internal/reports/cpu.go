@@ -29,15 +29,15 @@ const (
 type (
 	// CPUReport .
 	CPUReport struct {
-		Cores  int64  `attr:"cores"`
-		Freq   int64  `attr:"freq"`
-		Vendor string `attr:"vendor"`
+		cores  int64  `attr:"cores"`
+		freq   int64  `attr:"freq"`
+		vendor string `attr:"vendor"`
 
-		Smx    int64 `attr:"smx"`
-		Sgx    int64 `attr:"sgx"`
-		Sgx1   int64 `attr:"sgx1"`
-		Sgx2   int64 `attr:"sgx2"`
-		SgxFcl int64 `attr:"sgx_fcl"`
+		smx    int64 `attr:"smx"`
+		sgx    int64 `attr:"sgx"`
+		sgx1   int64 `attr:"sgx1"`
+		sgx2   int64 `attr:"sgx2"`
+		sgxFcl int64 `attr:"sgx_fcl"`
 	}
 
 	sgxInfo struct {
@@ -64,36 +64,36 @@ func (dr *CPUReport) Stop(ctx context.Context) error {
 func (dr *CPUReport) gatherLinux(ctx context.Context) []error {
 	sysInfo := getSysInfo()
 
-	dr.Cores = int64(sysInfo.CPU.Cores)
+	dr.cores = int64(sysInfo.CPU.Cores)
 
-	if dr.Cores == 0 {
-		dr.Cores = int64(sysInfo.CPU.Threads)
+	if dr.cores == 0 {
+		dr.cores = int64(sysInfo.CPU.Threads)
 	}
 
-	dr.Freq = int64(sysInfo.CPU.Speed)
-	dr.Vendor = sysInfo.CPU.Vendor
+	dr.freq = int64(sysInfo.CPU.Speed)
+	dr.vendor = sysInfo.CPU.Vendor
 
-	dr.Smx = 0
-	dr.Sgx1 = 0
-	dr.Sgx2 = 0
-	dr.SgxFcl = 0
+	dr.smx = 0
+	dr.sgx1 = 0
+	dr.sgx2 = 0
+	dr.sgxFcl = 0
 
 	sgxInfo, _ := getSgxInfo()
 
 	if sgxInfo.Smx {
-		dr.Smx = 1
+		dr.smx = 1
 	}
 	if sgxInfo.Available {
-		dr.Sgx = 1
+		dr.sgx = 1
 	}
 	if sgxInfo.Version1 {
-		dr.Sgx1 = 1
+		dr.sgx1 = 1
 	}
 	if sgxInfo.Version2 {
-		dr.Sgx2 = 1
+		dr.sgx2 = 1
 	}
 	if sgxInfo.Fcl {
-		dr.SgxFcl = 1
+		dr.sgxFcl = 1
 	}
 
 	return nil

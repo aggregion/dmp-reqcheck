@@ -4,6 +4,8 @@ import (
 	"context"
 	"net"
 	"time"
+
+	"github.com/aggregion/dmp-reqcheck/pkg/common"
 )
 
 const (
@@ -22,8 +24,6 @@ type (
 
 		accessible int64 `attr:"accessible"`
 		probeTime  int64 `attr:"time"`
-
-		errors []error
 	}
 )
 
@@ -47,17 +47,23 @@ func (dr *NetProbeReport) gatherLinux(ctx context.Context) []error {
 		timeout = time.Second * 4
 	}
 
-	start := time.Now().UnixNano()
+	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {
+		start := time.Now().UnixNano()
 
-	conn, err := net.DialTimeout(dr.Type, dr.Target, timeout)
-	if conn != nil {
-		defer conn.Close()
-	}
-	if err == nil {
-		dr.accessible = 1
-	}
+		conn, err := net.DialTimeout(dr.Type, dr.Target, timeout)
+		if conn != nil {
+			defer conn.Close()
+		}
+		if err == nil {
+			dr.accessible = 1
+		} else {
+			return err
+		}
 
-	dr.probeTime = (time.Now().UnixNano() - start) / 1000000
+		dr.probeTime = (time.Now().UnixNano() - start) / 1000000
+
+		return nil
+	})
 
 	return nil
 }

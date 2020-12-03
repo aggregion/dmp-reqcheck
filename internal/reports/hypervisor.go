@@ -11,8 +11,6 @@ type (
 	// HypervisorReport .
 	HypervisorReport struct {
 		name string `attr:"name"`
-
-		errors []error
 	}
 )
 

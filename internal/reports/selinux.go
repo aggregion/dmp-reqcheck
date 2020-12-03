@@ -14,8 +14,6 @@ type (
 	// OSSeLinuxReport .
 	OSSeLinuxReport struct {
 		mode string `attr:"mode"`
-
-		errors []error
 	}
 )
 

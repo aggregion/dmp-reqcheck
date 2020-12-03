@@ -42,8 +42,6 @@ type (
 		composeVersion      string `attr:"compose_version"`
 		composeVersionMajor int64  `attr:"compose_version_major"`
 		composeVersionMinor int64  `attr:"compose_version_minor"`
-
-		errors []error
 	}
 )
 
