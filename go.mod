@@ -4,12 +4,14 @@ go 1.15
 
 require (
 	github.com/go-delve/delve v1.5.0 // indirect
+	github.com/go-kit/kit v0.8.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/google/go-dap v0.3.0 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.3.2 // indirect
+	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/peterh/liner v1.2.1 // indirect
 	github.com/pkg/errors v0.8.1

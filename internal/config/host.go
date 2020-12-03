@@ -55,7 +55,7 @@ func hostSettingsValidateAndGet(v *viper.Viper) *HostSettings {
 			panic("for role dmp you should specify --hosts ch:host")
 		}
 		if len(conf.Hosts[RoleEnclave]) == 0 {
-			panic("for role dmp you should specify --hosts ch:enclave")
+			panic("for role dmp you should specify --hosts enclave:host")
 		}
 	}
 

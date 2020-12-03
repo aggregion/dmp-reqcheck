@@ -6,7 +6,7 @@ const (
 	// RoleCH .
 	RoleCH = "ch"
 	// RoleEnclave .
-	RoleEnclave = "db"
+	RoleEnclave = "enclave"
 )
 
 type (

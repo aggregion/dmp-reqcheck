@@ -77,7 +77,7 @@ func MergeReports(groups ...ReportsGroup) (out ReportsGroup) {
 		}
 	}
 
-	return out
+	return
 }
 
 // MergeReportsAttrs .
@@ -91,7 +91,7 @@ func MergeReportsAttrs(reportItems ReportsGroup) (out map[string]interface{}) {
 		}
 	}
 
-	return out
+	return
 }
 
 // MergeResourceLimits .
@@ -114,5 +114,21 @@ func MergeResourceLimits(groups ...ResourceLimitsType) (out ResourceLimitsType) 
 		}
 	}
 
-	return out
+	return
+}
+
+// MergeSchemas .
+func MergeSchemas(schemas ...*CheckSchema) (out CheckSchema) {
+	limits := make(ResourceLimitsType)
+	reps := make(ReportsGroup)
+
+	for _, schema := range schemas {
+		limits = MergeResourceLimits(limits, schema.ResourceLimits)
+		reps = MergeReports(reps, schema.Reports)
+	}
+
+	out.ResourceLimits = limits
+	out.Reports = reps
+
+	return
 }

@@ -32,7 +32,7 @@ func getLimit(attrs schema.ResourceLimitsType, repID string, attrName string) sc
 
 // commonInspection .
 func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAttrs map[string]interface{}) {
-	var intVal, minVal int64
+	var intVal, intVal2, minVal int64
 	var strVal string
 
 	//
@@ -73,13 +73,27 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 			log.Warningf("The Ubuntu major version %s is too old, minimal version is 18.x", strVal)
 		}
 	case "centos":
-		if intVal < 18 {
+		if intVal < 8 {
 			log.Warningf("The CentOS major version %s is too old, minimal version is 8.x", strVal)
 		}
 	case "rhel":
-		if intVal < 18 {
+		if intVal < 8 {
 			log.Warningf("The CentOS major version %s is too old, minimal version is 8.x", strVal)
 		}
+	}
+
+	strVal = reportStrAttr(allAttrs, "kernel", reports.KernelVersionStrAttr)
+	intVal = reportIntAttr(allAttrs, "kernel", reports.KernelMajorVersionIntAttr)
+	if intVal == 0 {
+		log.Error("Fail to inspect Kernel version")
+	}
+	if intVal < 4 {
+		log.Warningf("The Kernel major version %s is too old, minimal version is 4.x", strVal)
+	}
+
+	strVal = reportStrAttr(allAttrs, "hypervisor", reports.HypervisorNameStrAttr)
+	if strVal != "" {
+		log.Infof("The Host use hypervisor %s, it would be better to use baremetal machine", strVal)
 	}
 
 	//
@@ -87,9 +101,24 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 	//
 	intVal = reportIntAttr(allAttrs, "docker", reports.DockerClientMajorVersionIntAttr)
 	if intVal == 0 {
-		log.Error("The Docker is not installed")
+		log.Error("The Docker Client is not installed")
 	} else if intVal < 19 {
-		log.Warningf("The Docker version %d is too old, minimal version is 19.x", intVal)
+		log.Warningf("The Docker Client version %d is too old, minimal version is 19.x", intVal)
+	}
+
+	intVal = reportIntAttr(allAttrs, "docker", reports.DockerServerMajorVersionIntAttr)
+	if intVal == 0 {
+		log.Error("The Docker Daemon is not installed")
+	} else if intVal < 19 {
+		log.Warningf("The Docker Daemon version %d is too old, minimal version is 19.x", intVal)
+	}
+
+	intVal = reportIntAttr(allAttrs, "docker", reports.DockerComposeMajorVersionIntAttr)
+	intVal2 = reportIntAttr(allAttrs, "docker", reports.DockerComposeMinorVersionIntAttr)
+	if intVal == 0 {
+		log.Warn("The Docker Compose is not installed")
+	} else if intVal2 < 20 && intVal < 2 {
+		log.Warningf("The Docker Compose version %d.%d is too old, minimal version is 1.20.x", intVal, intVal2)
 	}
 
 	intVal = reportIntAttr(allAttrs, "docker_registry", reports.HTTPStatusIntAttr)

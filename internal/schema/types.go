@@ -30,7 +30,6 @@ type (
 
 	// CheckSchema .
 	CheckSchema struct {
-		Name           string
 		Role           config.Role
 		ResourceLimits ResourceLimitsType
 		Reports        ReportsGroup
