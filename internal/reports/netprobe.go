@@ -45,7 +45,7 @@ func (dr *NetProbeReport) gatherLinux(ctx context.Context) []error {
 
 	timeout := dr.Timeout
 	if timeout == 0 {
-		timeout = time.Second * 4
+		timeout = time.Second * 2
 	}
 
 	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {

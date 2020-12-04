@@ -41,6 +41,7 @@ func HTTPRequestAndGetResponse(requestContext context.Context, timeout time.Dura
 		ResponseHeaderTimeout: timeout,
 		DisableKeepAlives:     true,
 		MaxIdleConns:          1,
+		MaxConnsPerHost:       1,
 	}
 	if withProxy == "" {
 		tr.Proxy = nil
@@ -49,7 +50,10 @@ func HTTPRequestAndGetResponse(requestContext context.Context, timeout time.Dura
 		tr.Proxy = http.ProxyURL(utils.MustURLParse(withProxy))
 	}
 
-	client := &http.Client{Transport: tr}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   timeout,
+	}
 
 	responseChannel := make(httpResponseChannel)
 	request, err := http.NewRequest(httVerb, url, body)
