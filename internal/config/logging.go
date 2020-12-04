@@ -8,7 +8,7 @@ import (
 type (
 	// LoggingConsoleSettings .
 	LoggingConsoleSettings struct {
-		Level string `validate:"required,oneof=debug info warning error"`
+		Level string `validate:"required,oneof=trace debug info warning error"`
 	}
 )
 

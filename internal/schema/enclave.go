@@ -5,6 +5,25 @@ import (
 	"github.com/aggregion/dmp-reqcheck/internal/reports"
 )
 
+const (
+	// DriverDCAP .
+	DriverDCAP = "driver_dcap"
+	// DriverISGX .
+	DriverISGX = "driver_isgx"
+	// CasTest .
+	CasTest = "net_cas_test"
+	// CasProd .
+	CasProd = "net_cas_prod"
+	// IntelPbs .
+	IntelPbs = "http_intel_pbs"
+	// IntelCrl .
+	IntelCrl = "http_intel_pse_crl"
+	// IntelOcsp .
+	IntelOcsp = "http_intel_pse_ocsp"
+	// IntelWl .
+	IntelWl = "http_intel_wl"
+)
+
 // GetEnclaveCheckSchema .
 func GetEnclaveCheckSchema(cfg *config.Settings) *CheckSchema {
 	schemaReports := MergeReports(
@@ -13,30 +32,30 @@ func GetEnclaveCheckSchema(cfg *config.Settings) *CheckSchema {
 		GetClickhouseServicesSchemaReports(cfg),
 		GetDmpEnclaveServicesSchemaReports(cfg),
 		ReportsGroup{
-			"driver_dcap": &reports.DriverReport{
+			DriverDCAP: &reports.DriverReport{
 				DriverName: "intel_sgx",
 			},
-			"driver_isgx": &reports.DriverReport{
+			DriverISGX: &reports.DriverReport{
 				DriverName: "isgx",
 			},
-			"net_cas_test": &reports.NetProbeReport{
+			CasTest: &reports.NetProbeReport{
 				Type:   "tcp",
 				Target: "185.175.44.42:18765",
 			},
-			"net_cas_prod": &reports.NetProbeReport{
+			CasProd: &reports.NetProbeReport{
 				Type:   "tcp",
 				Target: "185.175.44.40:18765",
 			},
-			"http_intel_pbs": &reports.HTTPReport{
+			IntelPbs: &reports.HTTPReport{
 				URL: "http://ps.sgx.trustedservices.intel.com/",
 			},
-			"http_intel_pse_crl": &reports.HTTPReport{
+			IntelCrl: &reports.HTTPReport{
 				URL: "https://trustedservices.intel.com/content/CRL/",
 			},
-			"http_intel_pse_ocsp": &reports.HTTPReport{
+			IntelOcsp: &reports.HTTPReport{
 				URL: "http://trustedservices.intel.com/ocsp",
 			},
-			"http_intel_wl": &reports.HTTPReport{
+			IntelWl: &reports.HTTPReport{
 				URL: "http://whitelist.trustedservices.intel.com/SGX/LCWL/Linux/sgx_white_list_cert.bin",
 			},
 		},
@@ -45,13 +64,13 @@ func GetEnclaveCheckSchema(cfg *config.Settings) *CheckSchema {
 	return &CheckSchema{
 		Role: config.RoleEnclave,
 		ResourceLimits: ResourceLimitsType{
-			"disk." + reports.DiskTotalSpaceIntAttr: {
+			Disks + "." + reports.DisksTotalSpaceIntAttr: {
 				Minimal: 200000,
 			},
-			"cpu." + reports.CPUCoresIntAttr: {
+			CPU + "." + reports.CPUCoresIntAttr: {
 				Minimal: 4,
 			},
-			"ram." + reports.RAMTotalIntAttr: {
+			RAM + "." + reports.RAMTotalIntAttr: {
 				Minimal: 8000,
 			},
 		},

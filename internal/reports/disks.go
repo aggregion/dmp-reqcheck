@@ -6,33 +6,33 @@ import (
 )
 
 const (
-	// DiskTotalSpaceIntAttr .
-	DiskTotalSpaceIntAttr = "total"
-	// DiskFreeSpaceIntAttr .
-	DiskFreeSpaceIntAttr = "free"
+	// DisksTotalSpaceIntAttr .
+	DisksTotalSpaceIntAttr = "total"
+	// DisksFreeSpaceIntAttr .
+	DisksFreeSpaceIntAttr = "free"
 )
 
 type (
-	// DiskReport .
-	DiskReport struct {
+	// DisksReport .
+	DisksReport struct {
 		total int64 `attr:"total"`
 		free  int64 `attr:"free"`
 	}
 )
 
-var _ = (IReport)((*DiskReport)(nil))
+var _ = (IReport)((*DisksReport)(nil))
 
 // Start .
-func (dr *DiskReport) Start(ctx context.Context) error {
+func (dr *DisksReport) Start(ctx context.Context) error {
 	return nil
 }
 
 // Stop .
-func (dr *DiskReport) Stop(ctx context.Context) error {
+func (dr *DisksReport) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (dr *DiskReport) gatherLinux(ctx context.Context) []error {
+func (dr *DisksReport) gatherLinux(ctx context.Context) []error {
 	dr.total = 0
 	dr.free = 0
 
@@ -51,17 +51,22 @@ func (dr *DiskReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *DisksReport) String() string {
+	return ""
+}
+
 // Gather .
-func (dr *DiskReport) Gather(ctx context.Context) []error {
+func (dr *DisksReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 
 // GetInt64 .
-func (dr *DiskReport) GetInt64(attrName string) int64 {
+func (dr *DisksReport) GetInt64(attrName string) int64 {
 	return getReportIntAttr(dr, attrName)
 }
 
 // GetString .
-func (dr *DiskReport) GetString(attrName string) string {
+func (dr *DisksReport) GetString(attrName string) string {
 	return getReportStrAttr(dr, attrName)
 }

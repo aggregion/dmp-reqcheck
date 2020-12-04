@@ -45,6 +45,11 @@ func (dr *SwapFileReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *SwapFileReport) String() string {
+	return ""
+}
+
 // Gather .
 func (dr *SwapFileReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

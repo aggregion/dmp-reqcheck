@@ -38,8 +38,10 @@ func (dr *HTTPStubServer) serveHTTP(ctx context.Context, host string) error {
 	var err error
 	go func() {
 		err = server.ListenAndServe()
-		if err != nil {
+		if err != nil && err != http.ErrServerClosed {
 			fmt.Printf("busy %s\n skip it\n", server.Addr)
+		} else {
+			fmt.Println(err)
 		}
 	}()
 
@@ -47,7 +49,6 @@ func (dr *HTTPStubServer) serveHTTP(ctx context.Context, host string) error {
 		select {
 		case <-dr.waitListenAndServe:
 		case <-ctx.Done():
-			close(dr.waitListenAndServe)
 		}
 
 		server.Close()

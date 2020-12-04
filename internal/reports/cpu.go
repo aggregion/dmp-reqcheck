@@ -99,6 +99,11 @@ func (dr *CPUReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *CPUReport) String() string {
+	return ""
+}
+
 // Gather .
 func (dr *CPUReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

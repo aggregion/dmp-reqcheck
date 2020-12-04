@@ -43,6 +43,11 @@ func (dr *OSSeLinuxReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *OSSeLinuxReport) String() string {
+	return ""
+}
+
 // Gather .
 func (dr *OSSeLinuxReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

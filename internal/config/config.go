@@ -13,11 +13,11 @@ type (
 )
 
 // NewSettings .
-func NewSettings(v *viper.Viper) *Settings {
+func NewSettings(v *viper.Viper, isListenContext bool) *Settings {
 	return &Settings{
 		// Loggins
 		LoggingConsole: loggingConsoleSettingsValidateAndGet(v),
 		// Host
-		Host: hostSettingsValidateAndGet(v),
+		Host: hostSettingsValidateAndGet(v, isListenContext),
 	}
 }

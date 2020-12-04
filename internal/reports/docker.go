@@ -102,6 +102,11 @@ func (dr *DockerReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *DockerReport) String() string {
+	return ""
+}
+
 // Gather .
 func (dr *DockerReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

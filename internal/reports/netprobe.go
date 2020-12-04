@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"time"
 
@@ -66,6 +67,11 @@ func (dr *NetProbeReport) gatherLinux(ctx context.Context) []error {
 	})
 
 	return nil
+}
+
+// String .
+func (dr *NetProbeReport) String() string {
+	return fmt.Sprintf("%s %s", dr.Type, dr.Target)
 }
 
 // Gather .

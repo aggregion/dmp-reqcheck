@@ -28,8 +28,16 @@ func main() {
 	mainFlags.String("logging-level", "info", "Default console level")
 	viper.BindPFlag("logging.console.level", mainFlags.Lookup("logging-level"))
 
-	mainCommand.AddCommand(cmds.CheckCommand())
 	mainCommand.AddCommand(cmds.ListenCommand())
+	mainCommand.AddCommand(cmds.CheckCommand())
+
+	flags := mainCommand.PersistentFlags()
+
+	flags.String("roles", "", "Roles")
+	viper.BindPFlag("host.roles", flags.Lookup("roles"))
+
+	flags.String("hosts", "", "Hosts")
+	viper.BindPFlag("host.hosts", flags.Lookup("hosts"))
 
 	if mainCommand.Execute() != nil {
 		os.Exit(1)

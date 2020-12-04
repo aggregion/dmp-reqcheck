@@ -51,6 +51,11 @@ func (dr *RAMReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *RAMReport) String() string {
+	return ""
+}
+
 // Gather .
 func (dr *RAMReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

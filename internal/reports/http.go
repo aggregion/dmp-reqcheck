@@ -3,6 +3,7 @@ package reports
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -31,7 +32,7 @@ type (
 		Headers   map[string][]string
 		Body      string
 		Timeout   time.Duration
-		WithProxy bool
+		WithProxy string
 
 		status  int64                  `attr:"status"`
 		headers map[string]interface{} `attrMap:"header_"`
@@ -74,11 +75,12 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) []error {
 	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {
 		start := time.Now().UnixNano()
 
-		response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers, true)
+		response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers, dr.WithProxy)
 		if response != nil {
 			defer response.Body.Close()
 		}
-		if err == nil {
+
+		if err == nil || err == network.ErrHTTPClientError || err == network.ErrHTTPServerError {
 			if response == nil {
 				return errors.New("response is nil")
 			}
@@ -99,6 +101,11 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) []error {
 	})
 
 	return nil
+}
+
+// String .
+func (dr *HTTPReport) String() string {
+	return fmt.Sprintf("%s:%s", dr.Method, dr.URL)
 }
 
 // Gather .

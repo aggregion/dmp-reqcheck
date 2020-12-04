@@ -2,11 +2,18 @@ package inspection
 
 import (
 	"context"
+	"fmt"
+	"reflect"
+	"sync"
+	"time"
 
 	"github.com/aggregion/dmp-reqcheck/internal/config"
 	"github.com/aggregion/dmp-reqcheck/internal/logger"
+	"github.com/aggregion/dmp-reqcheck/internal/reports"
 	"github.com/aggregion/dmp-reqcheck/internal/schema"
+	"github.com/aggregion/dmp-reqcheck/pkg/common"
 	"github.com/aggregion/dmp-reqcheck/pkg/utils"
+	"github.com/pterm/pterm"
 )
 
 // GetResultSchema .
@@ -25,37 +32,77 @@ func GetResultSchema(cfg *config.Settings) *schema.CheckSchema {
 
 	wholeSchema := schema.MergeSchemas(allSchemas...)
 
-	for _, report := range wholeSchema.Reports {
-		report.Gather(context.Background())
-	}
-
 	return &wholeSchema
 }
 
 // RunInspection .
-func RunInspection(cfg *config.Settings) {
+func RunInspection(ctx context.Context, cfg *config.Settings) error {
 	wholeSchema := GetResultSchema(cfg)
 
 	log := logger.Get("inspection", "RunInpsection")
 
-	log.Infof("Selected roles: %s", cfg.Host.Roles)
+	pterm.DefaultBigText.WithLetters(
+		pterm.NewLettersFromStringWithStyle("DMP", pterm.NewStyle(pterm.FgCyan)),
+		pterm.NewLettersFromStringWithStyle("ReqCheck", pterm.NewStyle(pterm.FgLightRed))).
+		Render()
+	pterm.DefaultHeader.WithMargin(20).Printf(
+		"Selected roles: %s", cfg.Host.Roles)
+	pterm.Println("Hardware Resource limits are summarized")
 
-	log.Infof("Gathering from %d reports...", len(wholeSchema.Reports))
+	spinnerPrefix := fmt.Sprintf("Gathering from %d reports...", len(wholeSchema.Reports))
+	log.Debug(spinnerPrefix)
+	spinner, _ := pterm.DefaultSpinner.WithDelay(time.Millisecond * 100).Start(spinnerPrefix)
+
+	waitGroup := sync.WaitGroup{}
+	workLimits := common.NewSemaphore(cfg.Host.GatherConcurrency)
+
+	waitGroup.Add(len(wholeSchema.Reports))
+
 	for _, report := range wholeSchema.Reports {
-		report.Gather(context.Background())
+		go func(report reports.IReport) {
+			workLimits.EnterWithCtx(ctx, 1)
+			defer workLimits.LeaveWithCtx(ctx, 1)
+			defer waitGroup.Done()
+
+			typeStr := reflect.TypeOf(report).String()
+
+			log.Tracef("Gather %s report...", typeStr)
+
+			spinner.UpdateText(fmt.Sprintf("%s %s", spinnerPrefix, typeStr))
+
+			report.Gather(ctx)
+
+			time.Sleep(time.Millisecond * 100)
+
+			log.Debugf("Gathered %s:%+v report.", typeStr, report)
+		}(report)
 	}
 
-	log.Info("Match reports with specified Roles...")
+	waitGroup.Wait()
+
+	spinner.Success("Reports are gathered.")
+	spinner.Stop()
+
+	reportsDetails := map[string]string{}
+	for name, report := range wholeSchema.Reports {
+		reportsDetails[name] = report.String()
+	}
+
+	log.Debug("Match reports with specified Roles...")
 
 	if utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleCH}) {
-		ClickhouseInspection(cfg, wholeSchema)
+		ClickhouseInspection(cfg, wholeSchema, reportsDetails)
 	}
 	if utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleDmp}) {
-		DmpInspection(cfg, wholeSchema)
+		DmpInspection(cfg, wholeSchema, reportsDetails)
 	}
 	if utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleEnclave}) {
-		EnclaveInspection(cfg, wholeSchema)
+		EnclaveInspection(cfg, wholeSchema, reportsDetails)
 	}
 
-	log.Info("All Checks are Complete!")
+	pterm.Println()
+
+	log.Debug("All Checks are Complete!")
+
+	return nil
 }

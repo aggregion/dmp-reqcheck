@@ -42,7 +42,7 @@ func tearDownServer() {
 func TestHttpRequestNormal(t *testing.T) {
 	bringUpServer(300, 50)
 	defer tearDownServer()
-	response, err := HTTPRequestAndGetResponse(context.Background(), time.Minute, "GET", testRequestURL, nil, nil, false)
+	response, err := HTTPRequestAndGetResponse(context.Background(), time.Minute, "GET", testRequestURL, nil, nil, "")
 	if response == nil {
 		t.Fatalf("Expected response not nil, got nil")
 	}
@@ -62,7 +62,7 @@ func TestHttpRequestNormal(t *testing.T) {
 func TestHttpRequestTimeout(t *testing.T) {
 	bringUpServer(300, 50)
 	defer tearDownServer()
-	response, err := HTTPRequestAndGetResponse(context.Background(), time.Millisecond, "GET", testRequestURL, nil, nil, false)
+	response, err := HTTPRequestAndGetResponse(context.Background(), time.Millisecond, "GET", testRequestURL, nil, nil, "")
 	if response != nil {
 		t.Fatalf("Expected response nil when timeout, got %v", response)
 	}
@@ -75,7 +75,7 @@ func TestHttpRequestTimeout(t *testing.T) {
 func TestHttpRequestWrongUrl(t *testing.T) {
 	bringUpServer(300, 50)
 	defer tearDownServer()
-	response, err := HTTPRequestAndGetResponse(context.Background(), time.Minute, "GET", "http://127.0.0.1:122337/invalid", nil, nil, false)
+	response, err := HTTPRequestAndGetResponse(context.Background(), time.Minute, "GET", "http://127.0.0.1:122337/invalid", nil, nil, "")
 	if response != nil {
 		t.Fatalf("Expected response nil for wrong url, got %v", response)
 	}
@@ -96,7 +96,7 @@ func TestHttpRequestCancellation(t *testing.T) {
 		cancel()
 	}()
 
-	response, err := HTTPRequestAndGetResponse(ctx, time.Minute, "GET", testRequestURL, nil, nil, false)
+	response, err := HTTPRequestAndGetResponse(ctx, time.Minute, "GET", testRequestURL, nil, nil, "")
 
 	if response != nil {
 		t.Fatalf("Expected response nil for wrong url, got %v", response)

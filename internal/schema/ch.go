@@ -15,13 +15,13 @@ func GetClickhouseCheckSchema(cfg *config.Settings) *CheckSchema {
 	return &CheckSchema{
 		Role: config.RoleCH,
 		ResourceLimits: ResourceLimitsType{
-			"disk." + reports.DiskTotalSpaceIntAttr: {
+			Disks + "." + reports.DisksTotalSpaceIntAttr: {
 				Minimal: 100000,
 			},
-			"cpu." + reports.CPUCoresIntAttr: {
+			CPU + "." + reports.CPUCoresIntAttr: {
 				Minimal: 4,
 			},
-			"ram." + reports.RAMTotalIntAttr: {
+			RAM + "." + reports.RAMTotalIntAttr: {
 				Minimal: 8000,
 			},
 		},

@@ -7,11 +7,13 @@ import (
 )
 
 // ClickhouseInspection .
-func ClickhouseInspection(cfg *config.Settings, sc *schema.CheckSchema) {
+func ClickhouseInspection(cfg *config.Settings, sc *schema.CheckSchema, reportDetails map[string]string) {
 	limits := sc.ResourceLimits
 	allAttrs := schema.MergeReportsAttrs(sc.Reports)
 
 	log := logger.Get("check", "Clickhouse Inspection")
 
-	commonInspection(log, limits, allAttrs)
+	// pterm.DefaultSection.Println("Clickhouse Inspection Report")
+
+	commonInspection(log, limits, allAttrs, reportDetails)
 }

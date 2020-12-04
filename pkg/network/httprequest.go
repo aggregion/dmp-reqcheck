@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/aggregion/dmp-reqcheck/pkg/utils"
 )
 
 type (
@@ -31,7 +33,7 @@ var (
 // HTTPRequestAndGetResponse make request with timeout and cancellation.
 // Note: Need to manually close response.Body if response != nil
 func HTTPRequestAndGetResponse(requestContext context.Context, timeout time.Duration,
-	httVerb, url string, body io.Reader, headers map[string][]string, withProxy bool) (response *http.Response, err error) {
+	httVerb, url string, body io.Reader, headers map[string][]string, withProxy string) (response *http.Response, err error) {
 
 	tr := &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
@@ -40,8 +42,11 @@ func HTTPRequestAndGetResponse(requestContext context.Context, timeout time.Dura
 		DisableKeepAlives:     true,
 		MaxIdleConns:          1,
 	}
-	if !withProxy {
+	if withProxy == "" {
 		tr.Proxy = nil
+	}
+	if withProxy != ".env" {
+		tr.Proxy = http.ProxyURL(utils.MustURLParse(withProxy))
 	}
 
 	client := &http.Client{Transport: tr}

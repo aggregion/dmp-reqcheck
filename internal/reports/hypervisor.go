@@ -34,6 +34,11 @@ func (dr *HypervisorReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *HypervisorReport) String() string {
+	return ""
+}
+
 // Gather .
 func (dr *HypervisorReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

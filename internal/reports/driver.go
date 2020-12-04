@@ -51,6 +51,11 @@ func (dr *DriverReport) gatherLinux(ctx context.Context) []error {
 	return nil
 }
 
+// String .
+func (dr *DriverReport) String() string {
+	return dr.DriverName
+}
+
 // Gather .
 func (dr *DriverReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)

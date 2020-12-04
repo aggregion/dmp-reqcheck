@@ -17,13 +17,13 @@ func GetDmpCheckSchema(cfg *config.Settings) *CheckSchema {
 	return &CheckSchema{
 		Role: config.RoleDmp,
 		ResourceLimits: ResourceLimitsType{
-			"disk." + reports.DiskTotalSpaceIntAttr: {
+			Disks + "." + reports.DisksTotalSpaceIntAttr: {
 				Minimal: 200000,
 			},
-			"cpu." + reports.CPUCoresIntAttr: {
+			CPU + "." + reports.CPUCoresIntAttr: {
 				Minimal: 4,
 			},
-			"ram." + reports.RAMTotalIntAttr: {
+			RAM + "." + reports.RAMTotalIntAttr: {
 				Minimal: 8000,
 			},
 		},

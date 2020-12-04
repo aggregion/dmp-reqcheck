@@ -28,12 +28,13 @@ type (
 	HostServiceReport struct {
 		Target     string
 		Timeout    time.Duration
-		WithProxy  bool
+		WithProxy  string
 		IsThisHost bool
 
 		accessible int64 `attr:"accessible"`
 
 		httpServer serve.HTTPStubServer
+		asStr      string
 	}
 )
 
@@ -145,10 +146,11 @@ func (dr *HostServiceReport) gatherLinux(ctx context.Context) []error {
 	url.RawQuery = query.Encode()
 
 	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {
+		dr.asStr = fmt.Sprintf("%s:%s", requestMethod, url.String())
 		response, err := network.HTTPRequestAndGetResponse(ctx,
 			timeout,
 			requestMethod,
-			url.String(), sendBodyStream, nil, false)
+			url.String(), sendBodyStream, nil, dr.WithProxy)
 		if response != nil {
 			defer response.Body.Close()
 		}
@@ -172,6 +174,11 @@ func (dr *HostServiceReport) gatherLinux(ctx context.Context) []error {
 	})
 
 	return nil
+}
+
+// String .
+func (dr *HostServiceReport) String() string {
+	return dr.Target
 }
 
 // Gather .

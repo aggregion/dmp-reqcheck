@@ -19,6 +19,8 @@ func GetRootLogger() *logrus.Logger {
 
 func initCommon(settings *config.Settings) {
 	switch settings.LoggingConsole.Level {
+	case "trace":
+		rootLogger.SetLevel(logrus.TraceLevel)
 	case "debug":
 		rootLogger.SetLevel(logrus.DebugLevel)
 	case "warning":

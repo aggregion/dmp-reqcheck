@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/aggregion/dmp-reqcheck/pkg/utils"
@@ -11,9 +11,10 @@ import (
 type (
 	// HostSettings .
 	HostSettings struct {
-		Roles []string `validate:"required"`
+		Roles []string `validate:"required,min=1,dive,oneof=ch dmp enclave"`
 
-		DefaultClickhousePort int
+		GatherConcurrency     int `validate:"required,min=1,max=16"`
+		DefaultClickhousePort int `validate:"required,min=1,max=65535"`
 
 		Hosts map[string]string
 
@@ -21,41 +22,48 @@ type (
 	}
 )
 
-func hostSettingsValidateAndGet(v *viper.Viper) *HostSettings {
+func hostSettingsValidateAndGet(v *viper.Viper, isListenContext bool) *HostSettings {
 	v.SetDefault("defaults.chport", 8123)
+	v.SetDefault("defaults.concurrency", 3)
 
 	var conf = &HostSettings{
-		Roles: strings.Split(v.GetString("host.roles"), ","),
+		Roles: utils.FilterEmptyStrs(strings.Split(v.GetString("host.roles"), ",")),
 		Hosts: map[string]string{},
 
 		DefaultClickhousePort: v.GetInt("defaults.chport"),
 
-		IsListen: v.GetBool("host.listen"),
+		IsListen:          v.GetBool("host.listen"),
+		GatherConcurrency: v.GetInt("defaults.concurrency"),
 	}
 
-	for _, host := range strings.Split(v.GetString("host.hosts"), ",") {
-		hostParts := strings.Split(host, ":")
-		if len(hostParts) == 1 && hostParts[0] == "" {
-			continue
+	if !isListenContext {
+		for _, host := range utils.FilterEmptyStrs(strings.Split(v.GetString("host.hosts"), ",")) {
+			hostParts := strings.Split(host, ":")
+			if len(hostParts) != 2 {
+				log.Fatalf("the host argument [%s] is not valid, not specified a role", host)
+			}
+			conf.Hosts[hostParts[0]] = hostParts[1]
+
+			if !utils.IsIntersectStrs(RolesAll, Roles{hostParts[0]}) {
+				log.Fatalf("the host argument [%s] is not valid, unknown host role (supported %s)", host, RolesAll)
+			}
 		}
 
-		if len(hostParts) != 2 {
-			panic(fmt.Sprintf("the host argument [%s] is not valid, not specified a role", host))
+		// check roles
+		if utils.IsIntersectStrs(conf.Roles, Roles{RoleDmp, RoleEnclave}) {
+			if len(conf.Hosts[RoleCH]) == 0 {
+				log.Fatalf("for roles dmp or enclave you should specify --hosts ch:host")
+			}
 		}
-		conf.Hosts[hostParts[0]] = hostParts[1]
-
-		if !utils.IsIntersectStrs(RolesAll, Roles{hostParts[0]}) {
-			panic(fmt.Sprintf("the host argument [%s] is not valid, unknown host role (supported %s)", host, RolesAll))
+		if utils.IsIntersectStrs(conf.Roles, Roles{RoleEnclave}) {
+			if len(conf.Hosts[RoleDmp]) == 0 {
+				log.Fatalf("for role enclave you should specify --hosts dmp:host")
+			}
 		}
-	}
-
-	// check roles
-	if utils.IsIntersectStrs(conf.Roles, Roles{RoleDmp, RoleEnclave}) {
-		if len(conf.Hosts[RoleCH]) == 0 {
-			panic("for role dmp you should specify --hosts ch:host")
-		}
-		if len(conf.Hosts[RoleEnclave]) == 0 {
-			panic("for role dmp you should specify --hosts enclave:host")
+		if utils.IsIntersectStrs(conf.Roles, Roles{RoleDmp}) {
+			if len(conf.Hosts[RoleEnclave]) == 0 {
+				log.Fatalf("for role dmp you should specify --hosts enclave:host")
+			}
 		}
 	}
 

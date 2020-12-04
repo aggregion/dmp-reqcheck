@@ -22,3 +22,15 @@ func IsIntersectStrs(strArgs1 []string, strArgs2 []string) bool {
 
 	return false
 }
+
+// FilterEmptyStrs .
+func FilterEmptyStrs(strs []string) (out []string) {
+	out = make([]string, 0, len(strs))
+	for _, s := range strs {
+		if len(s) > 0 {
+			out = append(out, s)
+		}
+	}
+
+	return
+}

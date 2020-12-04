@@ -57,6 +57,11 @@ func (dr *KernelReport) Gather(ctx context.Context) []error {
 	return dr.gatherLinux(ctx)
 }
 
+// String .
+func (dr *KernelReport) String() string {
+	return ""
+}
+
 // GetInt64 .
 func (dr *KernelReport) GetInt64(attrName string) int64 {
 	return getReportIntAttr(dr, attrName)

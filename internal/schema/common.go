@@ -8,21 +8,54 @@ import (
 	"github.com/aggregion/dmp-reqcheck/pkg/utils"
 )
 
+const (
+	// CPU .
+	CPU = "cpu"
+	// RAM .
+	RAM = "ram"
+	// Disks .
+	Disks = "disks"
+
+	// OS .
+	OS = "os"
+	// Kernel .
+	Kernel = "kernel"
+	// HV .
+	HV = "hypervisor"
+
+	// Docker .
+	Docker = "docker"
+	// DockerRegistry .
+	DockerRegistry = "docker_registry"
+	// AggregionProxy .
+	AggregionProxy = "net_aggregion_proxy"
+	// EOSTestNet .
+	EOSTestNet = "net_blockchain_testnet"
+	// EOSProdNet .
+	EOSProdNet = "net_blockchain_prodnet"
+	// DmpHostSvc .
+	DmpHostSvc = "host_service_dmp"
+	// EnclaveHostSvc .
+	EnclaveHostSvc = "host_service_enclave"
+	// ClickhouseHostSvc .
+	ClickhouseHostSvc = "host_service_clickhouse"
+)
+
 // GetCommonSchemaReports .
 func GetCommonSchemaReports(cfg *config.Settings) ReportsGroup {
 	return ReportsGroup{
-		"cpu":        &reports.CPUReport{},
-		"ram":        &reports.RAMReport{},
-		"disk":       &reports.DiskReport{},
-		"os":         &reports.OSReport{},
-		"kernel":     &reports.KernelReport{},
-		"hypervisor": &reports.HypervisorReport{},
+		CPU:    &reports.CPUReport{},
+		RAM:    &reports.RAMReport{},
+		Disks:  &reports.DisksReport{},
+		OS:     &reports.OSReport{},
+		Kernel: &reports.KernelReport{},
+		HV:     &reports.HypervisorReport{},
 
-		"docker": &reports.DockerReport{},
-		"docker_registry": &reports.HTTPReport{
+		Docker: &reports.DockerReport{},
+		DockerRegistry: &reports.HTTPReport{
 			URL: "https://registry.aggregion.com",
 		},
-		"net_aggregion_proxy": &reports.NetProbeReport{
+		AggregionProxy: &reports.NetProbeReport{
 			Type:   "tcp",
 			Target: "185.175.44.42:80",
 		},
@@ -32,11 +65,11 @@ func GetCommonSchemaReports(cfg *config.Settings) ReportsGroup {
 // GetCommonBlockchainSchemaReports .
 func GetCommonBlockchainSchemaReports(cfg *config.Settings) ReportsGroup {
 	return ReportsGroup{
-		"net_blockchain_testnet": &reports.NetProbeReport{
+		EOSTestNet: &reports.NetProbeReport{
 			Type:   "tcp",
 			Target: "185.137.232.118:9999",
 		},
-		"net_blockchain_prodnet": &reports.NetProbeReport{
+		EOSProdNet: &reports.NetProbeReport{
 			Type:   "tcp",
 			Target: "185.137.232.118:8888",
 		},
@@ -46,7 +79,7 @@ func GetCommonBlockchainSchemaReports(cfg *config.Settings) ReportsGroup {
 // GetClickhouseServicesSchemaReports .
 func GetClickhouseServicesSchemaReports(cfg *config.Settings) ReportsGroup {
 	return ReportsGroup{
-		"host_service_clickhouse": &reports.HostServiceReport{
+		ClickhouseHostSvc: &reports.HostServiceReport{
 			IsThisHost: utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleCH}),
 			Target:     fmt.Sprintf("http://%s:%d", cfg.Host.Hosts[config.RoleCH], cfg.Host.DefaultClickhousePort),
 		},
@@ -56,11 +89,11 @@ func GetClickhouseServicesSchemaReports(cfg *config.Settings) ReportsGroup {
 // GetDmpEnclaveServicesSchemaReports .
 func GetDmpEnclaveServicesSchemaReports(cfg *config.Settings) ReportsGroup {
 	return ReportsGroup{
-		"host_service_dmp": &reports.HostServiceReport{
+		DmpHostSvc: &reports.HostServiceReport{
 			IsThisHost: utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleDmp}),
 			Target:     fmt.Sprintf("http://%s:8080", cfg.Host.Hosts[config.RoleDmp]),
 		},
-		"host_service_enclave": &reports.HostServiceReport{
+		EnclaveHostSvc: &reports.HostServiceReport{
 			IsThisHost: utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleEnclave}),
 			Target:     fmt.Sprintf("http://%s:8321", cfg.Host.Hosts[config.RoleEnclave]),
 		},

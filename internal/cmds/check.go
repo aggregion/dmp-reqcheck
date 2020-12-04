@@ -1,8 +1,11 @@
 package cmds
 
 import (
+	"context"
+
 	"github.com/aggregion/dmp-reqcheck/internal/config"
 	"github.com/aggregion/dmp-reqcheck/internal/inspection"
+	"github.com/aggregion/dmp-reqcheck/internal/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,19 +17,17 @@ func CheckCommand() *cobra.Command {
 		Aliases: []string{"c"},
 		Short:   "Do checks",
 		Run: func(cmd *cobra.Command, args []string) {
-			cfg := config.NewSettings(viper.GetViper())
+			cfg := config.NewSettings(viper.GetViper(), false)
+			logger.InitLogger(cfg)
 
-			inspection.RunInspection(cfg)
+			inspection.RunInspection(context.Background(), cfg)
 		},
 	}
 
 	flags := cmd.PersistentFlags()
 
-	flags.String("roles", "", "Roles")
-	viper.BindPFlag("host.roles", flags.Lookup("roles"))
-
-	flags.String("hosts", "", "Hosts")
-	viper.BindPFlag("host.hosts", flags.Lookup("hosts"))
+	flags.String("concurrency", "", "Concurrency of reports gathering (Min 1, Max 16).")
+	viper.BindPFlag("defaults.concurrency", flags.Lookup("concurrency"))
 
 	return cmd
 }
