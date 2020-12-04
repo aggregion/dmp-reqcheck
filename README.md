@@ -1,8 +1,8 @@
 # DMP Requirements Checker
 
-The application is used to generate a report for checking requirements of hardware, OS, processor, external resources, and etc.
+The application is used to generate a report for checking requirements of hardware, OS, Kernel, external resources, and etc.
 
-ReqCheck allows to cases with combination of deployments and hosts.
+ReqCheck allows cases with combinations of deployments and hosts.
 
 
 ## Case 3 Hosts
