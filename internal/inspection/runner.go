@@ -50,7 +50,6 @@ func RunInspection(ctx context.Context, cfg *config.Settings) error {
 	pterm.Println("Hardware Resource limits are summarized")
 
 	spinnerPrefix := fmt.Sprintf("Gathering from %d reports...", len(wholeSchema.Reports))
-	log.Debug(spinnerPrefix)
 	spinner, _ := pterm.DefaultSpinner.WithDelay(time.Millisecond * 100).Start(spinnerPrefix)
 
 	waitGroup := sync.WaitGroup{}

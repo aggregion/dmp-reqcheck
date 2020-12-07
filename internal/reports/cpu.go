@@ -22,8 +22,8 @@ const (
 	CPUSgx1IntAttr = "sgx1"
 	// CPUSgx2IntAttr .
 	CPUSgx2IntAttr = "sgx2"
-	// CPUSgxFclIntAttr .
-	CPUSgxFclIntAttr = "sgx_fcl"
+	// CPUSgxFlcIntAttr .
+	CPUSgxFlcIntAttr = "sgx_flc"
 )
 
 type (
@@ -37,7 +37,7 @@ type (
 		sgx    int64 `attr:"sgx"`
 		sgx1   int64 `attr:"sgx1"`
 		sgx2   int64 `attr:"sgx2"`
-		sgxFcl int64 `attr:"sgx_fcl"`
+		sgxFlc int64 `attr:"sgx_flc"`
 	}
 
 	sgxInfo struct {
@@ -45,7 +45,7 @@ type (
 		Available bool
 		Version1  bool
 		Version2  bool
-		Fcl       bool
+		Flc       bool
 	}
 )
 
@@ -76,7 +76,7 @@ func (dr *CPUReport) gatherLinux(ctx context.Context) []error {
 	dr.smx = 0
 	dr.sgx1 = 0
 	dr.sgx2 = 0
-	dr.sgxFcl = 0
+	dr.sgxFlc = 0
 
 	sgxInfo, _ := getSgxInfo()
 
@@ -92,8 +92,8 @@ func (dr *CPUReport) gatherLinux(ctx context.Context) []error {
 	if sgxInfo.Version2 {
 		dr.sgx2 = 1
 	}
-	if sgxInfo.Fcl {
-		dr.sgxFcl = 1
+	if sgxInfo.Flc {
+		dr.sgxFlc = 1
 	}
 
 	return nil

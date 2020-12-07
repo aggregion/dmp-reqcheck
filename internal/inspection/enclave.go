@@ -24,7 +24,9 @@ func EnclaveInspection(cfg *config.Settings, sc *schema.CheckSchema, reportDetai
 
 	// var intVal, intVal2, minVal int64
 	var intVal int64
+	var flcVal int64
 	var strVal string
+	var strVal2 string
 
 	//
 	// Hardware
@@ -33,14 +35,19 @@ func EnclaveInspection(cfg *config.Settings, sc *schema.CheckSchema, reportDetai
 	if intVal != 1 {
 		pterm.Error.Printf("CPU: SGX1 is not supported or it not enabled\n")
 	} else {
-		pterm.Success.Println("CPU: OK")
+		pterm.Success.Println("CPU SGX: OK")
 	}
 
-	intVal = reportIntAttr(allAttrs, schema.CPU, reports.CPUSgxFclIntAttr)
-	if intVal != 1 {
-		pterm.Warning.Printf("CPU: FCL feature is not supported or it not enabled, not possible to use Intel DCAP driver\n")
+	intVal = reportIntAttr(allAttrs, schema.CPU, reports.CPUSgx2IntAttr)
+	if intVal != 0 {
+		pterm.Error.Printf("CPU SGX2: OK\n")
+	}
+
+	flcVal = reportIntAttr(allAttrs, schema.CPU, reports.CPUSgxFlcIntAttr)
+	if flcVal != 1 {
+		pterm.Warning.Printf("CPU: FLC feature is not supported or it not enabled, not possible to use Intel DCAP driver\n")
 	} else {
-		pterm.Success.Println("CPU: OK")
+		pterm.Success.Println("CPU FLC: OK")
 	}
 
 	//
@@ -73,6 +80,28 @@ func EnclaveInspection(cfg *config.Settings, sc *schema.CheckSchema, reportDetai
 		pterm.Success.Println("OS Version: OK")
 	}
 
+	//
+	// Drivers
+	//
+	strVal = reportStrAttr(allAttrs, schema.DriverDCAP, reports.DriverVersionStrAttr)
+	strVal2 = reportStrAttr(allAttrs, schema.DriverISGX, reports.DriverVersionStrAttr)
+	if strVal == "" && strVal2 == "" {
+		pterm.Warning.Printf("The SGX Driver: no sgx drivers was found on the host\n")
+	} else if strVal2 != "" && flcVal != 0 {
+		pterm.Warning.Printf("The SGX Driver: ISGX driver was found on the host, your CPU is supported FLC, please install DCAP SGX Driver instead\n")
+	} else if strVal != "" && flcVal == 0 {
+		pterm.Warning.Printf("The SGX Driver: DCAP sgx driver was found on the host, your CPU is not supported FLC, please install Intel SGX Driver (not DCAP) instead\n")
+	} else if strVal2 != "" {
+		pterm.Success.Println("The SGX Driver: OK (ISGX)")
+	} else if strVal != "" {
+		pterm.Success.Println("The SGX Driver: OK (DCAP)")
+	} else {
+		pterm.Warning.Printf("The SGX Driver: no any SGX drivers was found on the host\n")
+	}
+
+	//
+	// Hosts
+	//
 	intVal = reportIntAttr(allAttrs, schema.ClickhouseHostSvc, reports.HostAccessibleIntAttr)
 	if intVal != 1 {
 		pterm.Error.Printf("Clickhouse Host: the host %s is not accessible or not response\n", reportDetails[schema.ClickhouseHostSvc])

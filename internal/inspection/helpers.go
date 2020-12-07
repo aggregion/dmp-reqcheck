@@ -79,9 +79,9 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 	//
 	pterm.DefaultSection.Println("OS")
 
-	strVal = reportStrAttr(allAttrs, schema.OS, reports.OSVendorStrAttr)
-	if strVal != "ubuntu" && strVal != "centos" {
-		pterm.Info.Printf("Vendor: current vendor is %s, it would be better to use Ubuntu 18.x or CentOS 8.x\n", strVal)
+	osVendor := reportStrAttr(allAttrs, schema.OS, reports.OSVendorStrAttr)
+	if osVendor != "ubuntu" && osVendor != "centos" && osVendor != "rhel" && osVendor != "redhat" {
+		pterm.Info.Printf("Vendor: current vendor is %s, it would be better to use Ubuntu 18.x or CentOS 8.x\n", osVendor)
 	} else {
 		pterm.Success.Println("Vendor: OK")
 	}
@@ -89,7 +89,7 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 	osVersionOk := true
 	strVal = reportStrAttr(allAttrs, schema.OS, reports.OSVersionStrAttr)
 	intVal = reportIntAttr(allAttrs, schema.OS, reports.OSMajorVersionIntAttr)
-	switch strVal {
+	switch osVendor {
 	case "ubuntu":
 		if intVal < 18 {
 			pterm.Warning.Printf("The Ubuntu major version %s is too old, minimal version is 18.x\n", strVal)
@@ -100,36 +100,34 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 			pterm.Warning.Printf("The CentOS major version %s is too old, minimal version is 8.x\n", strVal)
 			osVersionOk = false
 		}
+	case "redhat":
 	case "rhel":
 		if intVal < 8 {
-			pterm.Warning.Printf("The CentOS major version %s is too old, minimal version is 8.x\n", strVal)
+			pterm.Warning.Printf("The RedHat major version %s is too old, minimal version is 8.x\n", strVal)
 			osVersionOk = false
 		}
+	default:
+		pterm.Warning.Printf("Detected OS is %s %s, for better compatibles use Ubuntu 18 or CentOS 8\n", osVendor, strVal)
 	}
 	if osVersionOk {
 		pterm.Success.Println("Version: OK")
 	}
 
-	kernelVersionOk := true
 	strVal = reportStrAttr(allAttrs, schema.Kernel, reports.KernelVersionStrAttr)
 	intVal = reportIntAttr(allAttrs, schema.Kernel, reports.KernelMajorVersionIntAttr)
 	if intVal == 0 {
-		log.Error("Kernel Version: fail to determinate version")
-		kernelVersionOk = false
-	}
-	if intVal < 4 {
-		log.Warningf("Kernel Version: major version %s is too old, minimal version is 4.x", strVal)
-		kernelVersionOk = false
-	}
-	if kernelVersionOk {
+		pterm.Error.Println("Kernel Version: fail to determinate version")
+	} else if intVal < 4 {
+		pterm.Warning.Printf("Kernel Version: major version %s is too old, minimal version is 4.x\n", strVal)
+	} else {
 		pterm.Success.Println("Kernel Version: OK")
 	}
 
 	strVal = reportStrAttr(allAttrs, schema.HV, reports.HypervisorNameStrAttr)
 	if strVal != "" {
-		pterm.Info.Printf("Hypervisor: the Host use %s, it would be better to use baremetal machine\n", strVal)
+		pterm.Info.Printf("Hypervisor: the Host use %s as hypervisor, it would be better to use baremetal machine\n", strVal)
 	} else {
-		pterm.Success.Println("No-Hypervisor: OK")
+		pterm.Success.Println("No-Hypervisor: OK or Not Detected")
 	}
 
 	//
@@ -137,32 +135,47 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 	//
 	pterm.DefaultSection.Println("Common Resources")
 
+	isDockerExists := false
 	intVal = reportIntAttr(allAttrs, schema.Docker, reports.DockerClientMajorVersionIntAttr)
 	if intVal == 0 {
-		log.Error("The Docker Client is not installed or not found in default paths")
+		pterm.Error.Println("The Docker Client is not installed or not found in default paths")
 	} else if intVal < 19 {
-		log.Warningf("The Docker Client version %d is too old, minimal version is 19.x", intVal)
+		pterm.Warning.Printf("The Docker Client version %d is too old, minimal version is 19.x\n", intVal)
 	} else {
 		pterm.Success.Println("Docker Client: OK")
+		isDockerExists = true
 	}
 
 	intVal = reportIntAttr(allAttrs, schema.Docker, reports.DockerServerMajorVersionIntAttr)
 	if intVal == 0 {
-		log.Error("The Docker Daemon is not installed or not found in default paths")
+		pterm.Error.Println("The Docker Daemon is not installed or not found in default paths")
 	} else if intVal < 19 {
-		log.Warningf("The Docker Daemon version %d is too old, minimal version is 19.x", intVal)
+		pterm.Warning.Printf("The Docker Daemon version %d is too old, minimal version is 19.x\n", intVal)
 	} else {
 		pterm.Success.Println("Docker Daemon: OK")
+		isDockerExists = true
 	}
 
 	intVal = reportIntAttr(allAttrs, schema.Docker, reports.DockerComposeMajorVersionIntAttr)
 	intVal2 = reportIntAttr(allAttrs, schema.Docker, reports.DockerComposeMinorVersionIntAttr)
 	if intVal == 0 {
-		log.Warn("The Docker Compose is not installed or not found in default paths")
-	} else if intVal2 < 20 && intVal < 2 {
-		log.Warningf("The Docker Compose version %d.%d is too old, minimal version is 1.20.x", intVal, intVal2)
+		pterm.Warning.Println("The Docker Compose is not installed or not found in default paths")
+	} else if intVal < 2 && intVal2 < 20 {
+		pterm.Warning.Printf("The Docker Compose version %d.%d is too old, minimal version is 1.20.x\n", intVal, intVal2)
 	} else {
 		pterm.Success.Println("Docker Compose: OK")
+	}
+
+	if !isDockerExists {
+		intVal = reportIntAttr(allAttrs, schema.Podman, reports.PodmanMajorVersionIntAttr)
+		intVal2 = reportIntAttr(allAttrs, schema.Podman, reports.PodmanMinorVersionIntAttr)
+		if intVal == 0 {
+			pterm.Warning.Println("The Podman is not installed or not found in default paths")
+		} else if intVal <= 2 && intVal2 < 8 {
+			pterm.Warning.Printf("The Podman version %d.%d is too old, minimal version is 1.8.x\n", intVal, intVal2)
+		} else {
+			pterm.Success.Println("Podman: OK")
+		}
 	}
 
 	intVal = reportIntAttr(allAttrs, schema.DockerRegistry, reports.HTTPStatusIntAttr)

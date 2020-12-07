@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"log"
 	"strings"
 
@@ -67,7 +68,13 @@ func hostSettingsValidateAndGet(v *viper.Viper, isListenContext bool) *HostSetti
 		}
 	}
 
-	utils.MustValidate(conf)
+	err := utils.WrapPanic(func(ctx context.Context) {
+		utils.MustValidate(conf)
+	})(context.Background())
+
+	if err != nil {
+		log.Fatalf("fail to validate command arguments and options: %s", err)
+	}
 
 	return conf
 }

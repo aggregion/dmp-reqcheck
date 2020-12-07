@@ -23,6 +23,8 @@ const (
 	// HV .
 	HV = "hypervisor"
 
+	// Podman .
+	Podman = "podman"
 	// Docker .
 	Docker = "docker"
 	// DockerRegistry .
@@ -52,8 +54,10 @@ func GetCommonSchemaReports(cfg *config.Settings) ReportsGroup {
 		HV:     &reports.HypervisorReport{},
 
 		Docker: &reports.DockerReport{},
+		Podman: &reports.PodmanReport{},
 		DockerRegistry: &reports.HTTPReport{
-			URL: "https://registry.aggregion.com",
+			WithProxy: ".env",
+			URL:       "https://registry.aggregion.com",
 		},
 		AggregionProxy: &reports.NetProbeReport{
 			Type:   "tcp",
