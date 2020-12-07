@@ -178,6 +178,13 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 		}
 	}
 
+	intVal = reportIntAttr(allAttrs, schema.AggregionProxy, reports.NetProbeAccessibleIntAttr)
+	if intVal == 0 {
+		pterm.Warning.Printf("Aggregion Proxy: %s is not accessible or host is not response\n", reportDetails[schema.AggregionProxy])
+	} else {
+		pterm.Success.Println("Aggregion Proxy: OK")
+	}
+
 	intVal = reportIntAttr(allAttrs, schema.DockerRegistry, reports.HTTPStatusIntAttr)
 	if intVal == 0 {
 		pterm.Warning.Printf("Aggregion Registry: %s is not accessible or host is not response\n", reportDetails[schema.DockerRegistry])

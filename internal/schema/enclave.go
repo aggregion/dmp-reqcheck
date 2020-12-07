@@ -47,16 +47,20 @@ func GetEnclaveCheckSchema(cfg *config.Settings) *CheckSchema {
 				Target: cfg.Common.CasProdTarget,
 			},
 			IntelPbs: &reports.HTTPReport{
-				URL: "http://ps.sgx.trustedservices.intel.com/",
+				WithProxy: ".env",
+				URL:       "http://ps.sgx.trustedservices.intel.com/",
 			},
 			IntelCrl: &reports.HTTPReport{
-				URL: "https://trustedservices.intel.com/content/CRL/",
+				WithProxy: ".env",
+				URL:       "https://trustedservices.intel.com/content/CRL/",
 			},
 			IntelOcsp: &reports.HTTPReport{
-				URL: "http://trustedservices.intel.com/ocsp",
+				WithProxy: ".env",
+				URL:       "http://trustedservices.intel.com/ocsp",
 			},
 			IntelWl: &reports.HTTPReport{
-				URL: "http://whitelist.trustedservices.intel.com/SGX/LCWL/Linux/sgx_white_list_cert.bin",
+				WithProxy: ".env",
+				URL:       "http://whitelist.trustedservices.intel.com/SGX/LCWL/Linux/sgx_white_list_cert.bin",
 			},
 		},
 	)

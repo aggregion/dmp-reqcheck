@@ -45,8 +45,7 @@ func HTTPRequestAndGetResponse(requestContext context.Context, timeout time.Dura
 	}
 	if withProxy == "" {
 		tr.Proxy = nil
-	}
-	if withProxy != ".env" {
+	} else if withProxy != ".env" {
 		tr.Proxy = http.ProxyURL(utils.MustURLParse(withProxy))
 	}
 
