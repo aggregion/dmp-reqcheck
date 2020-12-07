@@ -40,7 +40,7 @@ func EnclaveInspection(cfg *config.Settings, sc *schema.CheckSchema, reportDetai
 
 	intVal = reportIntAttr(allAttrs, schema.CPU, reports.CPUSgx2IntAttr)
 	if intVal != 0 {
-		pterm.Error.Printf("CPU SGX2: OK\n")
+		pterm.Success.Printf("CPU SGX2: OK\n")
 	}
 
 	flcVal = reportIntAttr(allAttrs, schema.CPU, reports.CPUSgxFlcIntAttr)

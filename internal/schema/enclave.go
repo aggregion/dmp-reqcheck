@@ -40,11 +40,11 @@ func GetEnclaveCheckSchema(cfg *config.Settings) *CheckSchema {
 			},
 			CasTest: &reports.NetProbeReport{
 				Type:   "tcp",
-				Target: "185.175.44.42:18765",
+				Target: cfg.Common.CasTestTarget,
 			},
 			CasProd: &reports.NetProbeReport{
 				Type:   "tcp",
-				Target: "185.175.44.40:18765",
+				Target: cfg.Common.CasProdTarget,
 			},
 			IntelPbs: &reports.HTTPReport{
 				URL: "http://ps.sgx.trustedservices.intel.com/",

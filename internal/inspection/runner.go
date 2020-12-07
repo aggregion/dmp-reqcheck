@@ -53,7 +53,7 @@ func RunInspection(ctx context.Context, cfg *config.Settings) error {
 	spinner, _ := pterm.DefaultSpinner.WithDelay(time.Millisecond * 100).Start(spinnerPrefix)
 
 	waitGroup := sync.WaitGroup{}
-	workLimits := common.NewSemaphore(cfg.Host.GatherConcurrency)
+	workLimits := common.NewSemaphore(cfg.Common.GatherConcurrency)
 
 	waitGroup.Add(len(wholeSchema.Reports))
 

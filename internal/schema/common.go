@@ -61,7 +61,7 @@ func GetCommonSchemaReports(cfg *config.Settings) ReportsGroup {
 		},
 		AggregionProxy: &reports.NetProbeReport{
 			Type:   "tcp",
-			Target: "185.175.44.42:80",
+			Target: cfg.Common.ProxyTarget,
 		},
 	}
 }
@@ -69,13 +69,13 @@ func GetCommonSchemaReports(cfg *config.Settings) ReportsGroup {
 // GetCommonBlockchainSchemaReports .
 func GetCommonBlockchainSchemaReports(cfg *config.Settings) ReportsGroup {
 	return ReportsGroup{
-		EOSTestNet: &reports.NetProbeReport{
-			Type:   "tcp",
-			Target: "185.137.232.118:9999",
+		EOSTestNet: &reports.HTTPReport{
+			WithProxy: ".env",
+			URL:       fmt.Sprintf("http://%s/v1/chain/get_info", cfg.Common.EOSTestTarget),
 		},
-		EOSProdNet: &reports.NetProbeReport{
-			Type:   "tcp",
-			Target: "185.137.232.118:8888",
+		EOSProdNet: &reports.HTTPReport{
+			WithProxy: ".env",
+			URL:       fmt.Sprintf("http://%s/v1/chain/get_info", cfg.Common.EOSProdTarget),
 		},
 	}
 }
@@ -85,7 +85,7 @@ func GetClickhouseServicesSchemaReports(cfg *config.Settings) ReportsGroup {
 	return ReportsGroup{
 		ClickhouseHostSvc: &reports.HostServiceReport{
 			IsThisHost: utils.IsIntersectStrs(cfg.Host.Roles, config.Roles{config.RoleCH}),
-			Target:     fmt.Sprintf("http://%s:%d", cfg.Host.Hosts[config.RoleCH], cfg.Host.DefaultClickhousePort),
+			Target:     fmt.Sprintf("http://%s:%d", cfg.Host.Hosts[config.RoleCH], cfg.Common.DefaultClickhousePort),
 		},
 	}
 }

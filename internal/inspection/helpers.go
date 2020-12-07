@@ -202,15 +202,15 @@ func commonBlockchainInspection(log *logrus.Entry, limits schema.ResourceLimitsT
 
 	pterm.DefaultSection.Println("Blockchain")
 
-	intVal = reportIntAttr(allAttrs, schema.EOSTestNet, reports.NetProbeAccessibleIntAttr)
-	if intVal != 1 {
+	intVal = reportIntAttr(allAttrs, schema.EOSTestNet, reports.HTTPStatusIntAttr)
+	if intVal != 200 {
 		pterm.Warning.Printf("TestNET: %s EOS production network is not accessible or host is not response\n", reportDetails[schema.EOSTestNet])
 	} else {
 		pterm.Success.Println("TestNET: OK")
 	}
 
-	intVal = reportIntAttr(allAttrs, schema.EOSProdNet, reports.NetProbeAccessibleIntAttr)
-	if intVal != 1 {
+	intVal = reportIntAttr(allAttrs, schema.EOSProdNet, reports.HTTPStatusIntAttr)
+	if intVal != 200 {
 		pterm.Warning.Printf("ProdNET: %s EOS production network is not accessible or host is not response\n", reportDetails[schema.EOSProdNet])
 	} else {
 		pterm.Success.Println("ProdNET: OK")

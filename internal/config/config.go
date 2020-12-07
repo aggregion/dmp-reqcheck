@@ -9,6 +9,7 @@ type (
 	Settings struct {
 		LoggingConsole *LoggingConsoleSettings
 		Host           *HostSettings
+		Common         *CommonSettings
 	}
 )
 
@@ -19,5 +20,7 @@ func NewSettings(v *viper.Viper, isListenContext bool) *Settings {
 		LoggingConsole: loggingConsoleSettingsValidateAndGet(v),
 		// Host
 		Host: hostSettingsValidateAndGet(v, isListenContext),
+		// Common
+		Common: commonSettingsValidateAndGet(v),
 	}
 }

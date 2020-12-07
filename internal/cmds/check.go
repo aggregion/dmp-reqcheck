@@ -27,7 +27,7 @@ func CheckCommand() *cobra.Command {
 	flags := cmd.PersistentFlags()
 
 	flags.String("concurrency", "", "Concurrency of reports gathering (Min 1, Max 16).")
-	viper.BindPFlag("defaults.concurrency", flags.Lookup("concurrency"))
+	viper.BindPFlag("common.concurrency", flags.Lookup("concurrency"))
 
 	return cmd
 }

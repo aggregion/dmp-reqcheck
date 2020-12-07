@@ -14,27 +14,14 @@ type (
 	HostSettings struct {
 		Roles []string `validate:"required,min=1,dive,oneof=ch dmp enclave"`
 
-		GatherConcurrency     int `validate:"required,min=1,max=16"`
-		DefaultClickhousePort int `validate:"required,min=1,max=65535"`
-
 		Hosts map[string]string
-
-		IsListen bool
 	}
 )
 
 func hostSettingsValidateAndGet(v *viper.Viper, isListenContext bool) *HostSettings {
-	v.SetDefault("defaults.chport", 8123)
-	v.SetDefault("defaults.concurrency", 3)
-
 	var conf = &HostSettings{
 		Roles: utils.FilterEmptyStrs(strings.Split(v.GetString("host.roles"), ",")),
 		Hosts: map[string]string{},
-
-		DefaultClickhousePort: v.GetInt("defaults.chport"),
-
-		IsListen:          v.GetBool("host.listen"),
-		GatherConcurrency: v.GetInt("defaults.concurrency"),
 	}
 
 	if !isListenContext {

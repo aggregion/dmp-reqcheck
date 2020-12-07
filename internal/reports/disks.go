@@ -36,7 +36,7 @@ func (dr *DisksReport) gatherLinux(ctx context.Context) []error {
 	dr.total = 0
 	dr.free = 0
 
-	for _, mnt := range []string{"/", "/home", "/usr", "/var", "/opt", "/aggregion", "/mount", "/mnt"} {
+	for _, mnt := range []string{"/", "/home", "/usr", "/var", "/opt", "/aggregion", "/mount", "/mnt", "/data"} {
 		line, err := getOutputAndRegexpFind(ctx, `([\d,]+.\s+[\d,]+.\s+[\d,]+.\s+[\d]+%)\s`+mnt+"$", "df", "-m", mnt)
 		if err == nil && len(line) > 0 {
 			var total int64
