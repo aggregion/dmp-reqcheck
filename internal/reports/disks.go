@@ -3,6 +3,7 @@ package reports
 import (
 	"context"
 	"fmt"
+	"regexp"
 )
 
 const (
@@ -36,13 +37,29 @@ func (dr *DisksReport) gatherLinux(ctx context.Context) []error {
 	dr.total = 0
 	dr.free = 0
 
-	for _, mnt := range []string{"/", "/home", "/usr", "/var", "/opt", "/aggregion", "/mount", "/mnt", "/data"} {
-		line, err := getOutputAndRegexpFind(ctx, `([\d,]+.\s+[\d,]+.\s+[\d,]+.\s+[\d]+%)\s`+mnt+"$", "df", "-m", mnt)
-		if err == nil && len(line) > 0 {
+	dfOut, err := getOutput(ctx, "df", "-mT")
+	if err == nil {
+		rexp := regexp.MustCompile(`([/\w]+.\s+[\d,].+\s+[\d,]+.\s+[\d,]+\s+[\d]+%)\s`)
+
+		for _, line := range rexp.FindAllString(dfOut, -1) {
 			var total int64
 			var use int64
 			var free int64
-			fmt.Sscanf(line, "%d %d %d", &total, &use, &free)
+			var fsType string
+
+			fmt.Sscanf(line, "%s %d %d %d", &fsType, &total, &use, &free)
+
+			switch fsType {
+			case "brtfs":
+			case "zfs":
+			case "xfs":
+			case "ext3":
+			case "ext4":
+				break
+			default:
+				continue
+			}
+
 			dr.total += total
 			dr.free += free
 		}

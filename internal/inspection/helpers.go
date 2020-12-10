@@ -33,6 +33,35 @@ func getLimit(attrs schema.ResourceLimitsType, repID string, attrName string) sc
 
 var commonInspecionWasDone = false
 
+func isPairInPairs(a, b int64, pairs ...int64) bool {
+	if len(pairs)&1 == 1 {
+		panic("passed not even elements")
+	}
+
+	for i := 0; i < len(pairs); i += 2 {
+		if pairs[0] == a && pairs[1] == b {
+			return true
+		}
+	}
+	return false
+}
+
+func isKernelLTS(a, b int64) bool {
+	return isPairInPairs(a, b,
+		5, 4,
+		4, 19,
+		4, 14,
+		4, 9,
+		4, 4,
+		4, 1,
+		3, 18,
+		3, 16,
+		3, 14,
+		3, 12,
+		3, 10,
+	)
+}
+
 // commonInspection .
 func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAttrs map[string]interface{}, reportDetails map[string]string) {
 	if commonInspecionWasDone {
@@ -81,7 +110,7 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 
 	osVendor := reportStrAttr(allAttrs, schema.OS, reports.OSVendorStrAttr)
 	if osVendor != "ubuntu" && osVendor != "centos" && osVendor != "rhel" && osVendor != "redhat" {
-		pterm.Info.Printf("Vendor: current vendor is %s, it would be better to use Ubuntu 18.x or CentOS 8.x\n", osVendor)
+		pterm.Warning.Printf("Vendor: current OS vendor is %s, it would be better to use Ubuntu 18.x or CentOS 8.x\n", osVendor)
 	} else {
 		pterm.Success.Println("Vendor: OK")
 	}
@@ -107,7 +136,7 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 			osVersionOk = false
 		}
 	default:
-		pterm.Warning.Printf("Detected OS is %s %s, for better compatibles use Ubuntu 18 or CentOS 8\n", osVendor, strVal)
+		pterm.Warning.Printf("Detected OS is %s %s, for better compatibles use Ubuntu 18.x or CentOS 8.x\n", osVendor, strVal)
 	}
 	if osVersionOk {
 		pterm.Success.Println("Version: OK")
@@ -115,19 +144,24 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 
 	strVal = reportStrAttr(allAttrs, schema.Kernel, reports.KernelVersionStrAttr)
 	intVal = reportIntAttr(allAttrs, schema.Kernel, reports.KernelMajorVersionIntAttr)
+	intVal2 = reportIntAttr(allAttrs, schema.Kernel, reports.KernelMinorVersionIntAttr)
 	if intVal == 0 {
 		pterm.Error.Println("Kernel Version: fail to determinate version")
 	} else if intVal < 4 {
 		pterm.Warning.Printf("Kernel Version: major version %s is too old, minimal version is 4.x\n", strVal)
 	} else {
-		pterm.Success.Println("Kernel Version: OK")
+		if isKernelLTS(intVal, intVal2) {
+			pterm.Success.Println("Kernel Version: OK")
+		} else {
+			pterm.Success.Println("Kernel Version: OK (but it's not LTS)")
+		}
 	}
 
 	strVal = reportStrAttr(allAttrs, schema.HV, reports.HypervisorNameStrAttr)
 	if strVal != "" {
 		pterm.Info.Printf("Hypervisor: the Host use %s as hypervisor, it would be better to use baremetal machine\n", strVal)
 	} else {
-		pterm.Success.Println("No-Hypervisor: OK or Not Detected")
+		pterm.Success.Println("No-Hypervisor: OK (not detected)")
 	}
 
 	//
@@ -170,7 +204,7 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 		intVal = reportIntAttr(allAttrs, schema.Podman, reports.PodmanMajorVersionIntAttr)
 		intVal2 = reportIntAttr(allAttrs, schema.Podman, reports.PodmanMinorVersionIntAttr)
 		if intVal == 0 {
-			pterm.Warning.Println("The Podman is not installed or not found in default paths")
+			pterm.Error.Println("No any containerization system (Podman, Docker) is installed or not found in default paths")
 		} else if intVal <= 2 && intVal2 < 8 {
 			pterm.Warning.Printf("The Podman version %d.%d is too old, minimal version is 1.8.x\n", intVal, intVal2)
 		} else {

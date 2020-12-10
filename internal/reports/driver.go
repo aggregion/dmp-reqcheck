@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	// DriverInstalledIntAttr .
+	DriverInstalledIntAttr = "installed"
 	// DriverVersionStrAttr .
 	DriverVersionStrAttr = "version"
 	// DriverMajorVersionIntAttr .
@@ -19,6 +21,7 @@ type (
 	DriverReport struct {
 		DriverName string
 
+		installed    int64  `attr:"installed"`
 		version      string `attr:"version"`
 		versionMajor int64  `attr:"version_major"`
 		versionMinor int64  `attr:"version_minor"`
@@ -38,9 +41,15 @@ func (dr *DriverReport) Stop(ctx context.Context) error {
 }
 
 func (dr *DriverReport) gatherLinux(ctx context.Context) []error {
+	dr.installed = 0
 	dr.version = ""
 	dr.versionMajor = 0
 	dr.versionMinor = 0
+
+	lsmod, err := getOutputAndRegexpFind(ctx, regexp.QuoteMeta(dr.DriverName)+`\s+`, `lsmod`)
+	if err == nil && len(lsmod) > 0 {
+		dr.installed = 1
+	}
 
 	version, err := getOutputAndRegexpFind(ctx, `version.+`, "modinfo", dr.DriverName)
 	if err == nil {
