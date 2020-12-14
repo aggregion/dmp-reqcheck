@@ -102,9 +102,9 @@ func findLinuxApps(ctx context.Context, paths []string, apps []string) (result m
 			continue
 		}
 
-		output, err := getOutput(ctx, "which", app)
+		output, err := exec.LookPath(app)
 		if err == nil {
-			result[app] = strings.TrimSpace(string(output))
+			result[app] = string(output)
 			linuxFoundAppCache.Store(app, result[app])
 			continue
 		}

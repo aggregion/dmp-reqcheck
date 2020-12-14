@@ -72,7 +72,7 @@ func (dr *HTTPReport) gatherLinux(ctx context.Context) []error {
 		timeout = time.Second * 2
 	}
 
-	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 2, func(ctx context.Context) error {
+	common.RetryMethod(ctx, common.SleepExponentialFunc(time.Second, 1.2), 1, func(ctx context.Context) error {
 		start := time.Now().UnixNano()
 
 		response, err := network.HTTPRequestAndGetResponse(ctx, timeout, dr.Method, dr.URL, body, dr.Headers, dr.WithProxy)

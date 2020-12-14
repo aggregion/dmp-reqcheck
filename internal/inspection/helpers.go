@@ -110,7 +110,9 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 
 	osVendor := reportStrAttr(allAttrs, schema.OS, reports.OSVendorStrAttr)
 	if osVendor != "ubuntu" && osVendor != "centos" && osVendor != "rhel" && osVendor != "redhat" {
-		pterm.Warning.Printf("Vendor: current OS vendor is %s, it would be better to use Ubuntu 18.x or CentOS 8.x\n", osVendor)
+		pterm.Warning.Printf("Vendor: current OS vendor is %s, it would be better to use Ubuntu 18.x\n", osVendor)
+	} else if osVendor == "centos" {
+		pterm.Warning.Printf("Vendor: current OS vendor is centos, this distribution is outdated soon or already\n")
 	} else {
 		pterm.Success.Println("Vendor: OK")
 	}
@@ -127,6 +129,10 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 	case "centos":
 		if intVal < 8 {
 			pterm.Warning.Printf("The CentOS major version %s is too old, minimal version is 8.x\n", strVal)
+			osVersionOk = false
+		}
+		if intVal == 8 {
+			pterm.Warning.Printf("The CentOS major version is 8, support of centos 8 is until December 2021\n", strVal)
 			osVersionOk = false
 		}
 	case "redhat":
