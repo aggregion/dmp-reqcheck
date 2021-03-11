@@ -132,7 +132,7 @@ func commonInspection(log *logrus.Entry, limits schema.ResourceLimitsType, allAt
 			osVersionOk = false
 		}
 		if intVal == 8 {
-			pterm.Warning.Printf("The CentOS major version is 8, support of centos 8 is until December 2021\n", strVal)
+			pterm.Warning.Printf("The CentOS major version is %s, support of centos 8 is until December 2021\n", strVal)
 			osVersionOk = false
 		}
 	case "redhat":
